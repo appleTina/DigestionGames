@@ -640,7 +640,7 @@
                         <svg viewBox="0 0 220 160" class="w-48 h-36">
                             <rect x="10" y="10" width="200" height="140" rx="15" fill="#ffe4e6" stroke="#e11d48" stroke-width="5"/>
                             <path d="M 20,15 Q 35,60 50,15 Q 65,70 80,15 Q 95,55 110,15 Q 125,75 140,15 Q 155,60 170,15 Q 185,70 200,15" fill="none" stroke="#f43f5e" stroke-width="8" stroke-linecap="round"/>
-                            <path d="M 20,145 Q 35,100 50,145 Q 65,90 80,145 Q 95,105 110,145 Q 125,85 140,145 Q 155,100 170,145 Q 185,90 200,145" fill="none" stroke="#f43f5e" stroke-width="8" stroke-linecap="round"/>
+                            <path d="M 20,145 Q 35,100 50,145 Q 65,90 80,145 Q 95,105 110,145 Q 125,100 170,145 Q 185,90 200,145" fill="none" stroke="#f43f5e" stroke-width="8" stroke-linecap="round"/>
                         </svg>
                         <p class="text-xs text-rose-800 font-bold mt-2">食物通過波浪狀皺褶管道，大幅減緩速度並充分接觸！</p>
                     </div>
@@ -658,44 +658,98 @@
                 </div>
             </div>
 
+            <!-- Mini Game 5: Integrated Intestinal Nutrient Adventure Game -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 space-y-4">
                 <div class="flex justify-between items-center flex-wrap gap-2">
                     <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-gamepad text-emerald-600 text-xl"></i> 趣味小遊戲：「養分穿梭小腸皺褶挑戰 (20秒)」
+                        <i class="fa-solid fa-gamepad text-emerald-600 text-xl"></i> 趣味小遊戲：「小腸養分大冒險 Intestinal Nutrient Adventure」
                     </h3>
-                    <button onclick="resetAbsorbGame()" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1.5 rounded-lg border border-slate-300">
-                        🔄 重置遊戲
-                    </button>
                 </div>
-                <p class="text-sm text-slate-600 font-semibold">
-                    💡 <b>遊戲玩法：</b> 養分小球會自動前進，請點擊下方 <b>【◀️ 左移】</b> 與 <b>【右移 ▶️】</b> 按鈕（或鍵盤左右鍵）左右移動閃躲皺褶！只要維持 <b>20 秒</b> 就能安全抵達大腸；若撞到皺褶代表被小腸吸收！
-                </p>
 
-                <div class="bg-slate-900 text-white p-5 rounded-2xl relative overflow-hidden flex flex-col items-center space-y-4">
-                    <div class="flex justify-between w-full max-w-md text-sm font-bold border-b border-slate-700 pb-2">
-                        <span>距離大腸倒數：<b id="absorb-timer" class="text-amber-300 text-lg">20</b> 秒</span>
-                        <span id="absorb-status-badge" class="text-emerald-400">養分前進中...</span>
-                    </div>
+                <!-- Game Canvas & HUD Container -->
+                <div class="relative w-full max-w-md mx-auto h-[620px] bg-slate-950/90 rounded-2xl p-3 flex flex-col items-center justify-between border-2 border-pink-500/30 overflow-hidden shadow-xl text-white select-none">
 
-                    <div id="absorb-canvas-box" class="relative w-full max-w-md h-72 bg-rose-950/60 rounded-xl border-4 border-rose-800 overflow-hidden shadow-inner">
-                        <div id="absorb-obstacles-layer" class="absolute inset-0"></div>
-                        <div id="absorb-player" class="absolute bottom-4 left-1/2 -translate-x-1/2 w-7 h-7 bg-amber-400 border-2 border-white rounded-full shadow-lg flex items-center justify-center text-xs font-black text-slate-900 transition-all duration-75 z-20">
-                            🟡
+                    <!-- Top HUD -->
+                    <div id="hud" class="w-full bg-slate-900/80 backdrop-blur border border-pink-500/30 rounded-xl p-3 mb-1 flex flex-col gap-1.5 shadow-lg z-10 hidden">
+                        <div class="flex justify-between items-center text-xs sm:text-sm font-bold">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-bolt text-yellow-400"></i>
+                                <span>前進距離: <span id="scoreText" class="text-yellow-300 font-mono text-base">0</span> / 600 cm</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-gauge-high text-pink-400"></i>
+                                <span>流速: <span id="speedText" class="text-pink-300 font-mono">1.0</span>x</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-950 rounded-full h-2 border border-pink-500/20 overflow-hidden">
+                            <div id="progressBar" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-full w-0 transition-all duration-100"></div>
                         </div>
                     </div>
 
-                    <div class="flex justify-center gap-6 w-full max-w-md">
-                        <button onclick="movePlayerLeft()" class="flex-1 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black py-4 rounded-2xl shadow-lg text-xl transition flex items-center justify-center gap-2">
-                            ◀️ 左移
+                    <!-- Canvas Screen -->
+                    <div class="relative w-full flex-1 flex items-center justify-center overflow-hidden rounded-xl bg-pink-950/20 border border-pink-500/20">
+                        <canvas id="gameCanvas" class="w-full h-full object-contain"></canvas>
+
+                        <!-- Start / Menu Overlay -->
+                        <div id="startOverlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
+                            <div class="w-16 h-16 bg-gradient-to-tr from-amber-400 to-yellow-200 rounded-full flex items-center justify-center shadow-lg shadow-yellow-500/50 mb-3 animate-pulse">
+                                <i class="fa-solid fa-bacteria text-3xl text-amber-900"></i>
+                            </div>
+                            <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-300 to-yellow-300 mb-2">
+                                小腸養分大冒險
+                            </h1>
+                            <p class="text-pink-200 text-xs mb-4 max-w-xs leading-relaxed">
+                                穿越蜿蜒的小腸蠕動通道！避開左右突出的腸絨毛，順利吸收前進！
+                            </p>
+
+                            <div class="bg-pink-900/30 border border-pink-500/30 rounded-xl p-3 mb-5 w-full max-w-xs text-xs text-pink-200 text-left">
+                                <div class="font-bold text-yellow-300 mb-1">🎮 操作說明</div>
+                                <p>• 鍵盤：按 <kbd class="px-1.5 py-0.5 bg-pink-800 rounded">←</kbd> <kbd class="px-1.5 py-0.5 bg-pink-800 rounded">→</kbd> 或 <kbd class="px-1.5 py-0.5 bg-pink-800 rounded">A</kbd> <kbd class="px-1.5 py-0.5 bg-pink-800 rounded">D</kbd></p>
+                                <p>• 手機/滑鼠：點擊下方大按鈕左右移動</p>
+                            </div>
+
+                            <button id="startBtn" class="px-7 py-3 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold rounded-full shadow-lg shadow-pink-500/40 text-base transition-all transform active:scale-95 flex items-center gap-2">
+                                <i class="fa-solid fa-play"></i> 開始冒險
+                            </button>
+                        </div>
+
+                        <!-- Game Over Overlay -->
+                        <div id="gameOverOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20 hidden">
+                            <div id="statusIcon" class="w-16 h-16 bg-amber-500/20 border-2 border-amber-400 rounded-full flex items-center justify-center mb-2 text-amber-300 text-2xl animate-bounce">
+                                <i class="fa-solid fa-sponge"></i>
+                            </div>
+                            
+                            <div id="gameOverTitle" class="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 mb-1 drop-shadow-lg">
+                                養分被小腸吸收！
+                            </div>
+                            <p id="gameOverSub" class="text-pink-200/80 text-xs mb-4">任務結束！你已成功的為身體提供能量</p>
+
+                            <div class="bg-slate-900 border border-pink-500/30 rounded-xl p-3 w-full max-w-xs mb-5 space-y-2 shadow-xl">
+                                <div class="flex justify-between items-center text-xs sm:text-sm">
+                                    <span class="text-slate-400">本次前進距離：</span>
+                                    <span id="finalScore" class="font-bold text-yellow-300 font-mono text-lg">0 cm</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs sm:text-sm border-t border-slate-800 pt-1.5">
+                                    <span class="text-slate-400">歷史最佳紀錄：</span>
+                                    <span id="highScore" class="font-bold text-pink-400 font-mono text-base">0 cm</span>
+                                </div>
+                            </div>
+
+                            <button id="restartBtn" class="px-7 py-3 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-yellow-600 text-slate-950 font-black rounded-full shadow-lg shadow-amber-500/40 text-base transition-all transform active:scale-95 flex items-center gap-2">
+                                <i class="fa-solid fa-rotate-right"></i> 再次進入小腸
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Touch / Click Controls -->
+                    <div class="w-full mt-2 px-2 flex justify-between items-center gap-4 z-10">
+                        <button id="leftBtn" class="flex-1 py-3 bg-gradient-to-b from-rose-500 to-pink-700 active:from-pink-600 active:to-rose-800 border-2 border-pink-400/50 rounded-xl shadow-lg flex items-center justify-center text-white text-lg font-bold transition-transform active:scale-95 select-none">
+                            <i class="fa-solid fa-caret-left mr-1"></i> 向左
                         </button>
-                        <button onclick="movePlayerRight()" class="flex-1 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black py-4 rounded-2xl shadow-lg text-xl transition flex items-center justify-center gap-2">
-                            右移 ▶️
+                        <button id="rightBtn" class="flex-1 py-3 bg-gradient-to-b from-rose-500 to-pink-700 active:from-pink-600 active:to-rose-800 border-2 border-pink-400/50 rounded-xl shadow-lg flex items-center justify-center text-white text-lg font-bold transition-transform active:scale-95 select-none">
+                            向右 <i class="fa-solid fa-caret-right ml-1"></i>
                         </button>
                     </div>
-                    <button onclick="startAbsorbGame()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 py-3 rounded-xl shadow transition">
-                        🚀 開始穿梭冒險！
-                    </button>
-                    <p id="absorb-game-msg" class="text-sm font-bold text-amber-300">點擊「開始穿梭冒險」啟動倒數！</p>
                 </div>
             </div>
 
@@ -747,18 +801,18 @@
                         🔄 再玩一次
                     </button>
                 </div>
-                <p class="text-sm text-slate-600 font-semibold">調整糞便在大腸中的停留時間，觀察水分吸收狀況對糞便形態與排便健康的影響！</p>
+                <p class="text-sm text-slate-600 font-semibold">調整糞便在大腸中的停留時間（生理時間），觀察水分吸收狀況對糞便形態與排便健康的影響！</p>
 
                 <div class="bg-amber-50/70 p-6 rounded-2xl border border-amber-200 text-center space-y-5">
                     <div class="max-w-md mx-auto space-y-2">
                         <label class="block text-base font-bold text-slate-800">
-                            大腸水分吸收停留時間：<span id="poop-time-val" class="text-xl font-black text-amber-800">5 秒</span>
+                            大腸殘渣停留時間：<span id="poop-time-val" class="text-xl font-black text-amber-800">24 小時</span>
                         </label>
-                        <input id="poop-slider" type="range" min="1" max="10" value="5" oninput="updatePoopSlider(this.value)" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        <input id="poop-slider" type="range" min="6" max="72" value="24" step="2" oninput="updatePoopSlider(this.value)" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
                         <div class="flex justify-between text-xs font-bold text-slate-500">
-                            <span>1秒 (時間太短)</span>
-                            <span>5秒 (剛剛好)</span>
-                            <span>10秒 (時間太長)</span>
+                            <span>6小時 (蠕動過快)</span>
+                            <span>24小時 (約1天，剛剛好)</span>
+                            <span>72小時 (約3天，過久)</span>
                         </div>
                     </div>
 
@@ -956,6 +1010,7 @@
             setupEventListeners();
             initStage1Game();
             initStage4Nutrients();
+            initNutrientAdventureGame();
         });
 
         function initGame() {
@@ -965,10 +1020,476 @@
             isGameCleared = false;
             isSimulating = false;
 
-            document.getElementById('attempt-count').innerText = attempts;
+            const attemptEl = document.getElementById('attempt-count');
+            if (attemptEl) attemptEl.innerText = attempts;
             startTimer();
             renderPipelineNodes();
             renderCards();
+        }
+
+        // Integrated Mini Game 5 Engine: Intestinal Nutrient Adventure
+        function initNutrientAdventureGame() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            const startOverlay = document.getElementById('startOverlay');
+            const gameOverOverlay = document.getElementById('gameOverOverlay');
+            const hud = document.getElementById('hud');
+            const scoreText = document.getElementById('scoreText');
+            const speedText = document.getElementById('speedText');
+            const progressBar = document.getElementById('progressBar');
+            const gameOverTitle = document.getElementById('gameOverTitle');
+            const gameOverSub = document.getElementById('gameOverSub');
+            const statusIcon = document.getElementById('statusIcon');
+            const finalScore = document.getElementById('finalScore');
+            const highScore = document.getElementById('highScore');
+            const startBtn = document.getElementById('startBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+
+            let width = 360;
+            let height = 500;
+
+            function resizeCanvas() {
+                if (!canvas.parentElement) return;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width || 360;
+                canvas.height = rect.height || 500;
+                width = canvas.width;
+                height = canvas.height;
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            let gameState = 'START';
+            let score = 0;
+            let bestScore = localStorage.getItem('nutrient_high_score_cm') || 0;
+            let scrollSpeed = 0.9;
+            let initialSpeed = 0.9;
+            let distance = 0;
+            const TOTAL_INTESTINE_LENGTH = 600;
+            let frameCount = 0;
+
+            const player = {
+                x: width / 2,
+                y: height - 90,
+                radius: 8,
+                speed: 5.5,
+                glow: 14,
+                trail: [],
+                scale: 1.0
+            };
+
+            let wallSegments = [];
+            const segmentHeight = 6;
+            let foldPhase = 0;
+
+            const keys = { left: false, right: false };
+            let particles = [];
+            let bonusItems = [];
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+            });
+
+            const setupTouchBtn = (btn, keyProp) => {
+                if (!btn) return;
+                const startEvent = (e) => { e.preventDefault(); keys[keyProp] = true; };
+                const endEvent = (e) => { e.preventDefault(); keys[keyProp] = false; };
+                
+                btn.addEventListener('touchstart', startEvent);
+                btn.addEventListener('touchend', endEvent);
+                btn.addEventListener('mousedown', startEvent);
+                btn.addEventListener('mouseup', endEvent);
+                btn.addEventListener('mouseleave', endEvent);
+            };
+
+            function triggerGameOver(isWin = false) {
+                if (gameState !== 'PLAYING') return;
+                gameState = 'ABSORBING';
+
+                if (isWin) {
+                    for (let i = 0; i < 40; i++) {
+                        particles.push({
+                            x: player.x,
+                            y: player.y,
+                            vx: (Math.random() - 0.5) * 8,
+                            vy: (Math.random() - 0.5) * 8,
+                            radius: Math.random() * 5 + 3,
+                            color: i % 2 === 0 ? '#34d399' : '#fbbf24',
+                            life: 1.2
+                        });
+                    }
+                } else {
+                    for (let i = 0; i < 25; i++) {
+                        particles.push({
+                            x: player.x,
+                            y: player.y,
+                            vx: (Math.random() - 0.5) * 6,
+                            vy: (Math.random() - 0.5) * 6,
+                            radius: Math.random() * 4 + 2,
+                            color: i % 2 === 0 ? '#fde047' : '#f43f5e',
+                            life: 1.0
+                        });
+                    }
+                }
+
+                let shrinkInterval = setInterval(() => {
+                    player.scale -= 0.08;
+                    if (player.scale <= 0) {
+                        player.scale = 0;
+                        clearInterval(shrinkInterval);
+                        gameState = 'GAMEOVER';
+
+                        let finalDist = Math.min(TOTAL_INTESTINE_LENGTH, Math.floor(distance));
+                        if (finalDist > bestScore) {
+                            bestScore = finalDist;
+                            localStorage.setItem('nutrient_high_score_cm', bestScore);
+                        }
+
+                        if (isWin) {
+                            gameOverTitle.innerText = "抵達大腸！";
+                            gameOverTitle.className = "text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-400 mb-1 drop-shadow-lg";
+                            gameOverSub.innerText = "太棒了！養分完美穿過 600 公分的小腸成功到達大腸！";
+                            statusIcon.innerHTML = `<i class="fa-solid fa-flag-checkered text-emerald-400"></i>`;
+                            statusIcon.className = "w-16 h-16 bg-emerald-500/20 border-2 border-emerald-400 rounded-full flex items-center justify-center mb-2 text-2xl animate-bounce";
+                        } else {
+                            gameOverTitle.innerText = "養分被小腸吸收！";
+                            gameOverTitle.className = "text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 mb-1 drop-shadow-lg";
+                            gameOverSub.innerText = "任務結束！你已成功的為身體提供能量";
+                            statusIcon.innerHTML = `<i class="fa-solid fa-sponge text-amber-300"></i>`;
+                            statusIcon.className = "w-16 h-16 bg-amber-500/20 border-2 border-amber-400 rounded-full flex items-center justify-center mb-2 text-2xl animate-bounce";
+                        }
+
+                        finalScore.innerText = `${finalDist} cm`;
+                        highScore.innerText = `${bestScore} cm`;
+
+                        hud.classList.add('hidden');
+                        gameOverOverlay.classList.remove('hidden');
+                    }
+                }, 30);
+            }
+
+            function generateWallSegment(yPos, isInit = false) {
+                frameCount++;
+                foldPhase += 0.045;
+
+                let baseSin = Math.sin(foldPhase);
+                let detailSin = Math.sin(foldPhase * 2.5) * 0.3;
+                let combinedCurve = baseSin + detailSin;
+
+                let safetyFactor = isInit ? 0.15 : Math.min(1.0, distance / 80);
+                let maxSwing = width * 0.38 * safetyFactor;
+                let pathCenter = (width / 2) + combinedCurve * maxSwing;
+
+                let minWidth = 60;
+                let startWidth = 110;
+                let currentPathWidth = Math.max(minWidth, startWidth - Math.floor(distance / 12));
+
+                let leftEdge = pathCenter - (currentPathWidth / 2);
+                let rightEdge = pathCenter + (currentPathWidth / 2);
+
+                const margin = 28;
+                if (leftEdge < margin) {
+                    leftEdge = margin;
+                    rightEdge = leftEdge + currentPathWidth;
+                }
+                if (rightEdge > width - margin) {
+                    rightEdge = width - margin;
+                    leftEdge = rightEdge - currentPathWidth;
+                }
+
+                if (!isInit && Math.random() < 0.03 && frameCount % 35 === 0) {
+                    bonusItems.push({
+                        x: leftEdge + 10 + Math.random() * (rightEdge - leftEdge - 20),
+                        y: yPos,
+                        radius: 5,
+                        collected: false
+                    });
+                }
+
+                return {
+                    y: yPos,
+                    left: leftEdge,
+                    right: width - rightEdge,
+                    isFoldPeak: Math.abs(Math.cos(foldPhase)) > 0.85
+                };
+            }
+
+            function update() {
+                if (gameState !== 'PLAYING') return;
+
+                distance += scrollSpeed * 0.08;
+                scrollSpeed = initialSpeed + (distance / 350);
+
+                let curCm = Math.min(TOTAL_INTESTINE_LENGTH, Math.floor(distance));
+                scoreText.innerText = `${curCm}`;
+                speedText.innerText = `${(scrollSpeed / initialSpeed).toFixed(1)}`;
+                progressBar.style.width = `${(curCm / TOTAL_INTESTINE_LENGTH) * 100}%`;
+
+                if (distance >= TOTAL_INTESTINE_LENGTH) {
+                    triggerGameOver(true);
+                    return;
+                }
+
+                if (keys.left) player.x -= player.speed;
+                if (keys.right) player.x += player.speed;
+
+                player.trail.push({ x: player.x, y: player.y + 4, radius: player.radius * 0.65, alpha: 1 });
+                if (player.trail.length > 8) player.trail.shift();
+
+                for (let i = 0; i < wallSegments.length; i++) {
+                    wallSegments[i].y += scrollSpeed;
+                }
+
+                for (let i = bonusItems.length - 1; i >= 0; i--) {
+                    let b = bonusItems[i];
+                    b.y += scrollSpeed;
+
+                    let dist = Math.hypot(player.x - b.x, player.y - b.y);
+                    if (!b.collected && dist < player.radius + b.radius) {
+                        b.collected = true;
+                        distance += 15;
+                        
+                        for (let p = 0; p < 6; p++) {
+                            particles.push({
+                                x: b.x, y: b.y,
+                                vx: (Math.random() - 0.5) * 3,
+                                vy: (Math.random() - 0.5) * 3,
+                                radius: 3,
+                                color: '#fbbf24',
+                                life: 1
+                            });
+                        }
+                    }
+
+                    if (b.y > height + 20) bonusItems.splice(i, 1);
+                }
+
+                while (wallSegments.length > 0 && wallSegments[0].y > height + segmentHeight) {
+                    wallSegments.shift();
+                }
+
+                let topY = wallSegments.length > 0 ? wallSegments[wallSegments.length - 1].y : height;
+                while (topY > -segmentHeight * 2) {
+                    topY -= segmentHeight;
+                    wallSegments.push(generateWallSegment(topY));
+                }
+
+                for (let seg of wallSegments) {
+                    if (Math.abs(seg.y - player.y) < segmentHeight * 1.2) {
+                        if (player.x - player.radius + 1 < seg.left || player.x + player.radius - 1 > width - seg.right) {
+                            triggerGameOver(false);
+                            break;
+                        }
+                    }
+                }
+
+                if (player.x - player.radius < 0) player.x = player.radius;
+                if (player.x + player.radius > width) player.x = width - player.radius;
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 0.04;
+                    if (p.life <= 0) particles.splice(i, 1);
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#2c0b12';
+                ctx.fillRect(0, 0, width, height);
+
+                if (wallSegments.length > 0) {
+                    ctx.fillStyle = '#881337';
+                    ctx.fillRect(0, 0, 18, height);
+                    ctx.fillRect(width - 18, 0, 18, height);
+
+                    ctx.fillStyle = '#fef3c7';
+                    ctx.fillRect(14, 0, 12, height);
+                    ctx.fillRect(width - 26, 0, 12, height);
+
+                    ctx.fillStyle = '#e11d48';
+                    ctx.strokeStyle = '#9f1239';
+                    ctx.lineWidth = 2;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, wallSegments[0].y);
+                    for (let i = 0; i < wallSegments.length; i++) {
+                        let seg = wallSegments[i];
+                        ctx.lineTo(seg.left, seg.y);
+                    }
+                    ctx.lineTo(0, wallSegments[wallSegments.length - 1].y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(width, wallSegments[0].y);
+                    for (let i = 0; i < wallSegments.length; i++) {
+                        let seg = wallSegments[i];
+                        ctx.lineTo(width - seg.right, seg.y);
+                    }
+                    ctx.lineTo(width, wallSegments[wallSegments.length - 1].y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.strokeStyle = '#fda4af';
+                    ctx.lineWidth = 1;
+
+                    for (let i = 0; i < wallSegments.length; i++) {
+                        let seg = wallSegments[i];
+                        let leftX = seg.left;
+                        let y = seg.y;
+
+                        ctx.beginPath();
+                        ctx.arc(leftX, y, 3.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        if (seg.isFoldPeak) {
+                            ctx.beginPath();
+                            ctx.arc(leftX - 4, y - 2, 2.5, 0, Math.PI * 2);
+                            ctx.arc(leftX - 4, y + 2, 2.5, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+
+                        let rightX = width - seg.right;
+                        ctx.beginPath();
+                        ctx.arc(rightX, y, 3.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        if (seg.isFoldPeak) {
+                            ctx.beginPath();
+                            ctx.arc(rightX + 4, y - 2, 2.5, 0, Math.PI * 2);
+                            ctx.arc(rightX + 4, y + 2, 2.5, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+
+                for (let b of bonusItems) {
+                    if (!b.collected) {
+                        ctx.save();
+                        ctx.shadowColor = '#fbbf24';
+                        ctx.shadowBlur = 8;
+                        ctx.fillStyle = '#fef08a';
+                        ctx.beginPath();
+                        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                for (let i = 0; i < player.trail.length; i++) {
+                    let t = player.trail[i];
+                    let ratio = i / player.trail.length;
+                    ctx.fillStyle = `rgba(253, 224, 71, ${ratio * 0.45})`;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.radius * ratio * player.scale, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                if (player.scale > 0 && (gameState === 'PLAYING' || gameState === 'START' || gameState === 'ABSORBING')) {
+                    ctx.save();
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = player.glow * player.scale;
+
+                    let r = player.radius * player.scale;
+                    let gradient = ctx.createRadialGradient(
+                        player.x - 2, player.y - 2, 1,
+                        player.x, player.y, Math.max(1, r)
+                    );
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(0.3, '#fde047');
+                    gradient.addColorStop(1, '#d97706');
+
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, Math.max(0.1, r), 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (gameState === 'PLAYING') {
+                        ctx.strokeStyle = 'rgba(251, 191, 36, 0.7)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(player.x, player.y, r + 3 + Math.sin(Date.now() * 0.01) * 2, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+                }
+
+                for (let p of particles) {
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = Math.max(0, p.life);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                }
+            }
+
+            function gameLoop() {
+                update();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+
+            setupTouchBtn(leftBtn, 'left');
+            setupTouchBtn(rightBtn, 'right');
+
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    resetGame();
+                    startOverlay.classList.add('hidden');
+                    hud.classList.remove('hidden');
+                    gameState = 'PLAYING';
+                });
+            }
+
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    resetGame();
+                    gameOverOverlay.classList.add('hidden');
+                    hud.classList.remove('hidden');
+                    gameState = 'PLAYING';
+                });
+            }
+
+            function resetGame() {
+                distance = 0;
+                scrollSpeed = initialSpeed;
+                player.x = width / 2;
+                player.y = height - 90;
+                player.scale = 1.0;
+                player.trail = [];
+                particles = [];
+                bonusItems = [];
+                
+                wallSegments = [];
+                foldPhase = 0;
+                frameCount = 0;
+                for (let y = height; y > -segmentHeight * 10; y -= segmentHeight) {
+                    wallSegments.push(generateWallSegment(y, true));
+                }
+            }
+
+            resetGame();
+            gameLoop();
         }
 
         function startTimer() {
@@ -977,7 +1498,8 @@
                 timerSeconds++;
                 const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
                 const secs = String(timerSeconds % 60).padStart(2, '0');
-                document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+                const timerEl = document.getElementById('timer-display');
+                if (timerEl) timerEl.innerText = `${mins}:${secs}`;
             }, 1000);
         }
 
@@ -998,7 +1520,8 @@
                     ${name}
                 </button>
             `).join('');
-            document.getElementById('stage-progress-text').innerText = `關卡進度 ${currentStage + 1} / 8`;
+            const progressEl = document.getElementById('stage-progress-text');
+            if (progressEl) progressEl.innerText = `關卡進度 ${currentStage + 1} / 8`;
         }
 
         window.goToStage = function(stageIdx) {
@@ -1566,145 +2089,36 @@
             renderStage4Nutrients();
         };
 
-        // Mini Game 5 (Absorb Obstacle Navigation Game) Engine
-        let absorbGameTimer = 20;
-        let absorbTimerInterval = null;
-        let absorbLoopInterval = null;
-        let playerPosX = 50;
-        let obstacles = [];
-        let isAbsorbPlaying = false;
-
-        window.startAbsorbGame = function() {
-            resetAbsorbGame();
-            isAbsorbPlaying = true;
-            document.getElementById('absorb-game-msg').innerText = "🕹️ 遊戲進行中！請操控左右避開小腸皺褶！";
-
-            absorbTimerInterval = setInterval(() => {
-                absorbGameTimer--;
-                document.getElementById('absorb-timer').innerText = absorbGameTimer;
-                if (absorbGameTimer <= 0) {
-                    endAbsorbGame(true);
-                }
-            }, 1000);
-
-            absorbLoopInterval = setInterval(() => {
-                updateObstacles();
-                checkCollision();
-            }, 60);
-        };
-
-        window.resetAbsorbGame = function() {
-            clearInterval(absorbTimerInterval);
-            clearInterval(absorbLoopInterval);
-            isAbsorbPlaying = false;
-            absorbGameTimer = 20;
-            playerPosX = 50;
-            obstacles = [];
-            document.getElementById('absorb-timer').innerText = 20;
-            document.getElementById('absorb-player').style.left = '50%';
-            document.getElementById('absorb-obstacles-layer').innerHTML = '';
-            document.getElementById('absorb-game-msg').innerText = "點擊「開始穿梭冒險」啟動倒數！";
-            document.getElementById('absorb-status-badge').innerText = "等待發射...";
-        };
-
-        window.movePlayerLeft = function() {
-            if (!isAbsorbPlaying) return;
-            playerPosX = Math.max(12, playerPosX - 12);
-            document.getElementById('absorb-player').style.left = `${playerPosX}%`;
-        };
-
-        window.movePlayerRight = function() {
-            if (!isAbsorbPlaying) return;
-            playerPosX = Math.min(88, playerPosX + 12);
-            document.getElementById('absorb-player').style.left = `${playerPosX}%`;
-        };
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') movePlayerLeft();
-            if (e.key === 'ArrowRight') movePlayerRight();
-        });
-
-        function updateObstacles() {
-            const layer = document.getElementById('absorb-obstacles-layer');
-
-            if (Math.random() < 0.25) {
-                const side = Math.random() < 0.5 ? 'left' : 'right';
-                const width = Math.floor(Math.random() * 25) + 25;
-                obstacles.push({
-                    id: Date.now() + Math.random(),
-                    side: side,
-                    width: width,
-                    posY: -20
-                });
-            }
-
-            obstacles.forEach(obs => {
-                obs.posY += 4;
-            });
-
-            obstacles = obstacles.filter(obs => obs.posY < 320);
-
-            layer.innerHTML = obstacles.map(obs => `
-                <div class="absolute h-8 bg-rose-600/90 border-2 border-rose-300 rounded-lg flex items-center ${obs.side === 'left' ? 'left-0 justify-end' : 'right-0 justify-start'}" style="width:${obs.width}%; top:${obs.posY}px;">
-                    <span class="text-xs font-black text-amber-200 px-1">🖐️皺褶</span>
-                </div>
-            `).join('');
-        }
-
-        function checkCollision() {
-            obstacles.forEach(obs => {
-                if (obs.posY > 200 && obs.posY < 260) {
-                    if (obs.side === 'left' && playerPosX < obs.width + 5) {
-                        endAbsorbGame(false);
-                    }
-                    if (obs.side === 'right' && playerPosX > (100 - obs.width - 5)) {
-                        endAbsorbGame(false);
-                    }
-                }
-            });
-        }
-
-        function endAbsorbGame(isSuccess) {
-            clearInterval(absorbTimerInterval);
-            clearInterval(absorbLoopInterval);
-            isAbsorbPlaying = false;
-
-            if (isSuccess) {
-                document.getElementById('absorb-game-msg').innerText = "🎉 成功閃避所有皺褶！養分平安抵達大腸！";
-                document.getElementById('absorb-status-badge').innerText = "到達大腸！";
-                confetti({ particleCount: 70 });
-            } else {
-                document.getElementById('absorb-game-msg').innerText = "💥 碰觸到小腸絨毛！養分已被小腸絨毛成功吸收！";
-                document.getElementById('absorb-status-badge').innerText = "已被小腸吸收！";
-            }
-        }
-
         // Stage 6 Poop Game
         window.resetPoopGame = function() {
-            document.getElementById('poop-slider').value = 5;
-            updatePoopSlider(5);
+            const slider = document.getElementById('poop-slider');
+            if (slider) {
+                slider.value = 24;
+                updatePoopSlider(24);
+            }
         };
 
         window.updatePoopSlider = function(val) {
-            document.getElementById('poop-time-val').innerText = `${val} 秒`;
+            const valNum = Number(val);
+            document.getElementById('poop-time-val').innerText = `${valNum} 小時 (${(valNum / 24).toFixed(1)} 天)`;
             const icon = document.getElementById('poop-icon');
             const title = document.getElementById('poop-status-title');
             const desc = document.getElementById('poop-status-desc');
 
-            if (val <= 2) {
+            if (valNum <= 12) {
                 icon.innerText = "💩💧";
                 title.innerText = "水狀稀便 (腹瀉 / 拉肚子！)";
-                desc.innerText = "大腸蠕動過快，殘渣停留時間太短，水分來不及吸收就被排出了！";
+                desc.innerText = "大腸蠕動過快（僅停留 " + valNum + " 小時），殘渣停留時間太短，水分來不及吸收就被排出了！";
                 title.className = "text-lg font-black text-blue-600";
-            } else if (val <= 7) {
+            } else if (valNum <= 36) {
                 icon.innerText = "🍌✨";
                 title.innerText = "黃金香蕉狀糞便 (健康正常！)";
-                desc.innerText = "水分吸收時間剛剛好！經肛門順利排出，身體健康舒適！";
+                desc.innerText = "殘渣停留約 " + valNum + " 小時（約 1 天），水分吸收剛好適中！經肛門順利排出，身體健康！";
                 title.className = "text-lg font-black text-emerald-600";
             } else {
                 icon.innerText = "💩🌵";
                 title.innerText = "硬邦邦乾裂便便 (便秘！)";
-                desc.innerText = "大腸蠕動太慢，殘渣停留時間太長，水分被過度吸收乾涸了！";
+                desc.innerText = "大腸蠕動過慢（停留長達 " + valNum + " 小時/約 " + (valNum/24).toFixed(1) + " 天），水分被過度吸收乾涸了！";
                 title.className = "text-lg font-black text-amber-800";
             }
         };
