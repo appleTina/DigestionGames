@@ -108,8 +108,8 @@
                 </div>
             </div>
             <div class="flex items-center space-x-3">
-                <button id="btn-ranking" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-base font-bold transition flex items-center gap-1.5 shadow">
-                    <i class="fa-solid fa-trophy text-yellow-300"></i> 排行榜
+                <button id="btn-teacher" onclick="openTeacherModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-base font-bold transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-user-shield"></i> 教師後台
                 </button>
                 <button id="btn-instructions" class="bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-xl text-base font-bold transition shadow">
                     <i class="fa-solid fa-circle-question"></i> 說明
@@ -118,22 +118,113 @@
         </div>
 
         <!-- Global Stage Navigation Bar & Progress Bar -->
-        <div class="bg-emerald-800 text-emerald-100 px-4 py-2.5 text-sm border-t border-emerald-700">
-            <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-2">
+        <div class="bg-emerald-800 text-emerald-100 px-4 py-2.5 text-sm border-t border-emerald-700 flex justify-between items-center flex-wrap gap-2">
+            <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-2 w-full">
                 <div class="flex items-center space-x-1.5 font-bold overflow-x-auto py-1" id="stage-stepper">
                     <!-- Dynamic Stepper Buttons -->
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-3 shrink-0">
+                    <span id="user-info-badge" class="bg-emerald-900/80 px-3 py-1 rounded-lg text-amber-300 font-bold text-sm border border-emerald-600 hidden">
+                        👤 <span id="current-user-display">未登入</span>
+                    </span>
                     <span id="stage-progress-text" class="font-bold text-base text-yellow-300">關卡進度 1 / 8</span>
                 </div>
             </div>
         </div>
     </header>
 
+    <!-- Student Login Modal Overlay -->
+    <div id="login-overlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 border-4 border-emerald-400">
+            <div class="text-center space-y-2">
+                <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full mx-auto flex items-center justify-center text-4xl shadow-inner border-2 border-emerald-300">
+                    <i class="fa-solid fa-bacteria"></i>
+                </div>
+                <h2 class="text-3xl font-black text-slate-800">人體消化大冒險</h2>
+                <p class="text-sm font-bold text-slate-500">請輸入個人學習身份，系統將自動載入之前的學習進度！</p>
+            </div>
+
+            <form id="login-form" onsubmit="handleStudentLogin(event)" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">班級 (Class)</label>
+                        <select id="login-class" required class="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl p-3 font-bold text-slate-800">
+                            <!-- Options filled via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">座號 (Number)</label>
+                        <select id="login-seat" required class="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl p-3 font-bold text-slate-800">
+                            <!-- Options filled via JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">學生姓名 (Name)</label>
+                    <input id="login-name" type="text" required placeholder="請輸入姓名" class="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl p-3 font-bold text-slate-800">
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xl py-4 rounded-2xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rocket"></i> 出發冒險！
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Teacher Dashboard Modal -->
+    <div id="modal-teacher" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[90] flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-user-tie text-2xl text-amber-500"></i>
+                    <h3 class="text-2xl font-black text-slate-800">教師後台學習管理系統</h3>
+                </div>
+                <button class="btn-close-modal text-slate-400 hover:text-slate-600 text-3xl font-bold">&times;</button>
+            </div>
+
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <div class="flex items-center gap-2">
+                    <label class="font-bold text-slate-700 text-sm">選擇班級：</label>
+                    <select id="teacher-class-filter" onchange="renderTeacherDashboard()" class="bg-white border border-slate-300 rounded-xl px-3 py-1.5 font-bold text-slate-800">
+                        <option value="ALL">全部班級 (701~715)</option>
+                    </select>
+                </div>
+                <button onclick="exportTeacherExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 py-2 rounded-xl text-sm transition shadow flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-yellow-300"></i> 匯出 EXCEL 報表 (.csv)
+                </button>
+            </div>
+
+            <div class="overflow-y-auto flex-grow rounded-2xl border border-slate-200">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-100 text-slate-700 font-black sticky top-0 border-b border-slate-200">
+                        <tr>
+                            <th class="p-3">班級/座號</th>
+                            <th class="p-3">姓名</th>
+                            <th class="p-3">排序關卡嘗試</th>
+                            <th class="p-3">小腸大冒險最佳</th>
+                            <th class="p-3">大腸水分狀態</th>
+                            <th class="p-3">綜合測驗得分</th>
+                            <th class="p-3">最後更新時間</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacher-tbody" class="divide-y divide-slate-100 font-bold text-slate-700">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button class="btn-close-modal bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-2.5 rounded-xl transition text-base">
+                    關閉後台
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Dynamic Stage View Container -->
     <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
 
-        <!-- ================= STAGE 0: Order Sorting & Pipeline Test ================= -->
+        <!-- STAGE 0: Order Sorting & Vertical Pipeline Test -->
         <div id="stage-0" class="stage-container space-y-6">
             <div class="bg-emerald-100 border-l-4 border-emerald-600 p-5 rounded-r-2xl shadow-xs">
                 <h2 class="text-xl font-black text-emerald-900 flex items-center gap-2">
@@ -144,8 +235,8 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <section class="lg:col-span-7 flex flex-col gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <section class="lg:col-span-6 flex flex-col gap-4">
                     <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 flex justify-between items-center">
                         <div class="flex items-center gap-6">
                             <div>
@@ -166,7 +257,7 @@
                     <div class="bg-emerald-50/70 rounded-2xl p-5 border-2 border-dashed border-emerald-200">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="text-base font-bold text-emerald-900 flex items-center gap-2">
-                                <i class="fa-solid fa-up-down-left-right"></i> 請依食物順利通行的順序排列卡片：
+                                <i class="fa-solid fa-up-down-left-right"></i> 請拖曳或按上下按鈕排列卡片：
                             </h3>
                             <span class="text-sm bg-emerald-200 text-emerald-900 px-3 py-1 rounded-full font-black">共 6 關</span>
                         </div>
@@ -174,92 +265,83 @@
                     </div>
                 </section>
 
-                <section class="lg:col-span-5 flex flex-col gap-4">
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100">
-                        <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-utensils text-amber-500"></i> 開始測試食物消化！
-                        </h3>
-                        <p class="text-sm text-slate-600 mb-4 font-semibold">點擊下方按鈕，觀察食物在消化管道中的進行狀況：</p>
+                <section class="lg:col-span-6 flex flex-col gap-4">
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100 flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-utensils text-amber-500"></i> 開始測試食物消化！
+                            </h3>
+                            <span id="food-state-badge" class="text-xs font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg border border-amber-300">
+                                [ 狀態：完整大塊食物 ]
+                            </span>
+                        </div>
 
-                        <button class="food-btn w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 border-2 border-emerald-700 text-white p-4 rounded-xl flex items-center justify-center gap-3 shadow-md transition" data-type="combo">
-                            <span class="text-4xl">🍱</span>
+                        <button onclick="startPipelineSimulation()" class="food-btn w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 border-2 border-emerald-700 text-white p-3.5 rounded-xl flex items-center justify-center gap-3 shadow-md transition">
+                            <span class="text-3xl">🍱</span>
                             <div class="text-left">
-                                <span class="text-lg font-black block leading-tight">吃綜合大餐</span>
+                                <span class="text-base font-black block leading-tight">吃綜合大餐</span>
                                 <span class="text-xs text-emerald-100 font-bold">(含澱粉、蛋白質、油脂與膳食纖維)</span>
                             </div>
                         </button>
                     </div>
 
-                    <div id="feedback-card" class="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100 flex-grow flex flex-col justify-center min-h-[180px]">
-                        <div id="feedback-default" class="text-center text-slate-400 py-4">
-                            <i class="fa-solid fa-flask text-4xl mb-2 text-slate-300 block"></i>
-                            <p class="text-base font-bold text-slate-500">排好卡片後，按下「吃綜合大餐」啟動消化模擬器！</p>
+                    <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-xl border-4 border-slate-800 relative overflow-hidden flex flex-col items-center">
+                        <div class="w-full flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
+                            <span class="text-sm font-black text-emerald-300 flex items-center gap-2">
+                                <i class="fa-solid fa-gears"></i> 垂直消化道模擬器
+                            </span>
+                            <span id="pipeline-status-text" class="text-xs text-slate-300 font-bold">等待點擊「吃綜合大餐」...</span>
                         </div>
 
-                        <div id="feedback-error" class="hidden space-y-3">
-                            <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl">
-                                <div class="flex items-center gap-2 text-rose-700 font-black text-base mb-1">
-                                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                        <div class="relative w-full max-w-sm h-[320px] bg-slate-950/80 rounded-xl border border-slate-700 p-2 overflow-hidden flex flex-col justify-between items-center">
+                            <svg class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 h-full w-4 pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+                                <line x1="50%" y1="0%" x2="50%" y2="100%" stroke="#334155" stroke-width="12" stroke-linecap="round"/>
+                            </svg>
+
+                            <div id="vertical-pipeline-nodes" class="relative z-10 w-full h-full flex flex-col justify-between items-center py-2">
+                            </div>
+
+                            <div id="vertical-food-ball" class="absolute z-20 w-10 h-10 -ml-5 -mt-5 rounded-full bg-amber-400 border-2 border-white shadow-xl flex items-center justify-center text-lg font-bold text-slate-900 opacity-0 scale-0 pointer-events-none transition-all duration-300">
+                                🍱
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="feedback-card" class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 min-h-[120px] flex flex-col justify-center">
+                        <div id="feedback-default" class="text-center text-slate-400 py-2">
+                            <p class="text-sm font-bold text-slate-500">排好卡片後按下「吃綜合大餐」，觀察食物在上方垂直消化道的流動！</p>
+                        </div>
+
+                        <div id="feedback-error" class="hidden space-y-2">
+                            <div class="bg-rose-50 border-l-4 border-rose-500 p-3 rounded-r-xl">
+                                <div class="flex items-center gap-2 text-rose-700 font-black text-sm mb-1">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
                                     <span id="error-title">消化告急！食物卡住了！</span>
                                 </div>
-                                <p id="error-organ-at" class="text-sm font-bold text-rose-900 mb-1">卡住關卡：第 X 關</p>
-                                <p id="error-detail" class="text-sm text-rose-800 leading-relaxed font-bold">觀察到的現象...</p>
+                                <p id="error-organ-at" class="text-xs font-bold text-rose-900">卡住關卡：第 X 關</p>
+                                <p id="error-detail" class="text-xs text-rose-800 font-bold">現象...</p>
                             </div>
-                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-sm text-amber-900">
-                                <span class="font-bold flex items-center gap-1.5 text-amber-800 mb-1 text-base">
-                                    <i class="fa-solid fa-lightbulb text-amber-500"></i> 動動腦，引導思考：
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs text-amber-900">
+                                <span class="font-bold flex items-center gap-1 text-amber-800 mb-0.5">
+                                    <i class="fa-solid fa-lightbulb text-amber-500"></i> 引導思考：
                                 </span>
-                                <span id="error-hint" class="leading-relaxed block font-semibold">引導式思考提問...</span>
+                                <span id="error-hint" class="block font-semibold">思考...</span>
                             </div>
                         </div>
 
-                        <div id="feedback-success" class="hidden space-y-3 text-center">
-                            <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-xl space-y-3">
-                                <i class="fa-solid fa-circle-check text-5xl text-emerald-500"></i>
-                                <h4 class="text-lg font-black text-emerald-800">消化道完全通暢！排序成功！</h4>
-                                <p class="text-sm text-emerald-700 font-bold">真實器官名稱已全面揭曉！點擊下方按鈕開始器官深入探險！</p>
-                                <button id="btn-go-stage1" onclick="goToStage(1)" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-md transition text-base flex items-center justify-center gap-2">
-                                    前往器官探險旅程 🚀
-                                </button>
-                            </div>
+                        <div id="feedback-success" class="hidden text-center space-y-2">
+                            <i class="fa-solid fa-circle-check text-4xl text-emerald-500"></i>
+                            <h4 class="text-base font-black text-emerald-800">消化道完全通暢！排序成功！</h4>
+                            <button id="btn-go-stage1" onclick="goToStage(1)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 rounded-xl shadow transition text-sm">
+                                前往器官探險旅程 🚀
+                            </button>
                         </div>
                     </div>
                 </section>
             </div>
-
-            <section class="bg-slate-900 text-white rounded-2xl p-6 shadow-xl border-4 border-slate-800 relative overflow-hidden">
-                <div class="flex flex-wrap justify-between items-center mb-4 border-b border-slate-700 pb-3 gap-2">
-                    <div class="flex items-center gap-2">
-                        <span class="inline-block w-3.5 h-3.5 bg-emerald-400 rounded-full animate-ping"></span>
-                        <h2 class="text-lg md:text-xl font-black text-emerald-300 flex items-center gap-2">
-                            <i class="fa-solid fa-gears"></i> 消化道模擬器
-                        </h2>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-slate-300 font-bold">食物當前狀態：</span>
-                        <span id="food-state-badge" class="text-sm font-bold bg-slate-800 text-amber-300 px-3 py-1 rounded-full border border-slate-700">
-                            [ 狀態：完整大塊食物 ]
-                        </span>
-                    </div>
-                </div>
-
-                <div class="relative py-12 px-2 overflow-x-auto">
-                    <svg id="pipe-svg" class="absolute top-1/2 left-0 w-full -translate-y-1/2 h-16 pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
-                        <line id="pipe-line" x1="5%" y1="50%" x2="95%" y2="50%" stroke="#334155" stroke-width="16" stroke-linecap="round"/>
-                    </svg>
-                    <div id="pipeline-nodes" class="relative z-10 flex justify-between items-center min-w-[700px] px-4"></div>
-                    <div id="food-ball" class="absolute z-20 min-w-[50px] h-12 -ml-6 -mt-6 px-2.5 rounded-full bg-amber-400 border-2 border-white shadow-xl flex items-center justify-center gap-1.5 text-xl font-bold text-slate-900 opacity-0 scale-0 pointer-events-none transition-all duration-300">
-                        <span id="food-ball-icon">🍱</span>
-                        <span id="food-ball-label" class="text-xs font-black leading-none bg-black/30 px-1.5 py-0.5 rounded text-white hidden sm:inline">完整</span>
-                    </div>
-                </div>
-                <div id="pipeline-status-text" class="mt-3 text-center text-sm text-slate-300 font-bold font-mono">
-                    等待點擊食物按鈕啟動模擬...
-                </div>
-            </section>
         </div>
 
-        <!-- ================= STAGE 1: 口腔與唾腺 ================= -->
+        <!-- STAGE 1: 口腔與唾腺 -->
         <div id="stage-1" class="stage-container hidden space-y-6">
             <div class="bg-amber-50 rounded-2xl p-6 border border-amber-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-amber-200 pb-3 flex-wrap gap-2">
@@ -348,7 +430,7 @@
             </div>
         </div>
 
-        <!-- ================= STAGE 2: 咽與食道 ================= -->
+        <!-- STAGE 2: 咽與食道 -->
         <div id="stage-2" class="stage-container hidden space-y-6">
             <div class="bg-blue-50 rounded-2xl p-6 border border-blue-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-blue-200 pb-3 flex-wrap gap-2">
@@ -432,7 +514,7 @@
             </div>
         </div>
 
-        <!-- ================= STAGE 3: 胃與胃腺 (馬歇爾故事漫畫) ================= -->
+        <!-- STAGE 3: 胃與胃腺 -->
         <div id="stage-3" class="stage-container hidden space-y-6">
             <div class="bg-purple-50 rounded-2xl p-6 border border-purple-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-purple-200 pb-3 flex-wrap gap-2">
@@ -507,7 +589,7 @@
             </div>
         </div>
 
-        <!-- ================= STAGE 4: 小腸（消化篇）與消化腺 ================= -->
+        <!-- STAGE 4: 小腸（消化篇）與消化腺 -->
         <div id="stage-4" class="stage-container hidden space-y-6">
             <div class="bg-sky-50 rounded-2xl p-6 border border-sky-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-sky-200 pb-3 flex-wrap gap-2">
@@ -584,17 +666,17 @@
                         </div>
                     </div>
 
-                    <div class="lg:col-span-6 bg-white p-5 rounded-xl border border-sky-200 flex flex-col justify-between space-y-3 min-h-[360px]">
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <span class="text-sm font-bold text-sky-900">🌀 小腸腔內部養分拆解狀態 (各10個隨機排列)</span>
-                            <span id="nutrients-count-badge" class="text-sm font-bold text-emerald-600">未完全分解：30 顆</span>
+                    <div class="lg:col-span-6 bg-white p-4 rounded-xl border border-sky-200 flex flex-col justify-between space-y-2">
+                        <div class="flex justify-between items-center border-b pb-1.5">
+                            <span class="text-sm font-black text-sky-900">🌀 小腸內部養分狀態</span>
+                            <span id="nutrients-count-badge" class="text-xs font-bold text-emerald-600">未完全分解：30 顆</span>
                         </div>
 
-                        <div id="small-intestine-chamber" class="grid grid-cols-2 md:grid-cols-3 gap-2 py-2 bg-sky-50/80 p-3 rounded-xl min-h-[220px] max-h-[260px] overflow-y-auto">
+                        <div id="small-intestine-chamber" class="grid grid-cols-5 sm:grid-cols-6 gap-1.5 py-1 bg-sky-50/80 p-2 rounded-xl">
                         </div>
 
-                        <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-200 text-xs text-amber-900 font-bold">
-                            <span id="game4-status-msg" class="block leading-relaxed">請點擊左圖器官！1份膽汁乳化1個脂質，腸液無法消化脂質，胰臟與小腸會隨機分解1個可消化養分！</span>
+                        <div class="bg-amber-50 p-2 rounded-lg border border-amber-200 text-xs text-amber-900 font-bold text-center">
+                            <span id="game4-status-msg" class="block leading-snug">請點擊左圖器官！1份膽汁乳化1個脂質，腸液無法消化脂質，胰臟與小腸隨機分解1個養分！</span>
                         </div>
                     </div>
                 </div>
@@ -610,7 +692,7 @@
             </div>
         </div>
 
-        <!-- ================= STAGE 5: 小腸（吸收篇） ================= -->
+        <!-- STAGE 5: 小腸（吸收篇） -->
         <div id="stage-5" class="stage-container hidden space-y-6">
             <div class="bg-rose-50 rounded-2xl p-6 border border-rose-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-rose-200 pb-3 flex-wrap gap-2">
@@ -666,10 +748,7 @@
                     </h3>
                 </div>
 
-                <!-- Game Canvas & HUD Container -->
                 <div class="relative w-full max-w-md mx-auto h-[620px] bg-slate-950/90 rounded-2xl p-3 flex flex-col items-center justify-between border-2 border-pink-500/30 overflow-hidden shadow-xl text-white select-none">
-
-                    <!-- Top HUD -->
                     <div id="hud" class="w-full bg-slate-900/80 backdrop-blur border border-pink-500/30 rounded-xl p-3 mb-1 flex flex-col gap-1.5 shadow-lg z-10 hidden">
                         <div class="flex justify-between items-center text-xs sm:text-sm font-bold">
                             <div class="flex items-center space-x-2">
@@ -686,11 +765,9 @@
                         </div>
                     </div>
 
-                    <!-- Canvas Screen -->
                     <div class="relative w-full flex-1 flex items-center justify-center overflow-hidden rounded-xl bg-pink-950/20 border border-pink-500/20">
                         <canvas id="gameCanvas" class="w-full h-full object-contain"></canvas>
 
-                        <!-- Start / Menu Overlay -->
                         <div id="startOverlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20">
                             <div class="w-16 h-16 bg-gradient-to-tr from-amber-400 to-yellow-200 rounded-full flex items-center justify-center shadow-lg shadow-yellow-500/50 mb-3 animate-pulse">
                                 <i class="fa-solid fa-bacteria text-3xl text-amber-900"></i>
@@ -713,7 +790,6 @@
                             </button>
                         </div>
 
-                        <!-- Game Over Overlay -->
                         <div id="gameOverOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20 hidden">
                             <div id="statusIcon" class="w-16 h-16 bg-amber-500/20 border-2 border-amber-400 rounded-full flex items-center justify-center mb-2 text-amber-300 text-2xl animate-bounce">
                                 <i class="fa-solid fa-sponge"></i>
@@ -741,7 +817,6 @@
                         </div>
                     </div>
 
-                    <!-- Touch / Click Controls -->
                     <div class="w-full mt-2 px-2 flex justify-between items-center gap-4 z-10">
                         <button id="leftBtn" class="flex-1 py-3 bg-gradient-to-b from-rose-500 to-pink-700 active:from-pink-600 active:to-rose-800 border-2 border-pink-400/50 rounded-xl shadow-lg flex items-center justify-center text-white text-lg font-bold transition-transform active:scale-95 select-none">
                             <i class="fa-solid fa-caret-left mr-1"></i> 向左
@@ -763,7 +838,7 @@
             </div>
         </div>
 
-        <!-- ================= STAGE 6: 大腸與肛門便便篇 ================= -->
+        <!-- STAGE 6: 大腸與肛門便便篇 -->
         <div id="stage-6" class="stage-container hidden space-y-6">
             <div class="bg-amber-50 rounded-2xl p-6 border border-amber-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between border-b border-amber-200 pb-3 flex-wrap gap-2">
@@ -834,7 +909,7 @@
             </div>
         </div>
 
-        <!-- ================= STAGE 7: 終極測驗驗收 ================= -->
+        <!-- STAGE 7: 終極測驗驗收 -->
         <div id="stage-7" class="stage-container hidden space-y-6">
             <div class="bg-gradient-to-r from-amber-500 to-emerald-600 text-white rounded-2xl p-6 shadow-md space-y-2">
                 <h2 class="text-2xl md:text-3xl font-black flex items-center gap-2">
@@ -910,40 +985,192 @@
         </div>
     </div>
 
-    <!-- Leaderboard Modal -->
-    <div id="modal-ranking" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-trophy text-amber-500"></i> 探險家排行榜
-                </h3>
-                <button class="btn-close-modal text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
-            </div>
-            <div class="overflow-y-auto max-h-[320px]">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-100 text-slate-600 font-bold sticky top-0">
-                        <tr>
-                            <th class="p-2.5">名次</th>
-                            <th class="p-2.5">玩家 ID</th>
-                            <th class="p-2.5">測驗得分</th>
-                            <th class="p-2.5">嘗試次數</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ranking-tbody" class="divide-y divide-slate-100">
-                        <tr>
-                            <td colspan="4" class="p-4 text-center text-slate-400">目前尚無紀錄！</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <button class="btn-close-modal w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl transition text-base">
-                關閉
-            </button>
-        </div>
-    </div>
+    <!-- Firebase System Module & Global Game Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase 專案設定資訊
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgl2JP9Z75Uf8xzp0HLPTrGOPzoYj8nec",
+            authDomain: "digestive-game.firebaseapp.com",
+            databaseURL: "https://digestive-game-default-rtdb.firebaseio.com",
+            projectId: "digestive-game",
+            storageBucket: "digestive-game.firebasestorage.app",
+            messagingSenderId: "1065446391591",
+            appId: "1:1065446391591:web:c82b4b39187b1c1bccf302",
+            measurementId: "G-BV21T0F9F3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        async function initAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                console.warn("Firebase Auth Warning:", err);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) currentUser = user;
+        });
+
+        initAuth();
+
+        // 儲存學生進度到 Firebase Firestore (集合名稱：student_progress)
+        window.saveStudentProgressToCloud = async function(data) {
+            if (!window.currentStudent || !window.currentStudent.key) return;
+            try {
+                const docRef = doc(db, 'student_progress', window.currentStudent.key);
+                await setDoc(docRef, {
+                    ...data,
+                    userId: currentUser ? currentUser.uid : 'anonymous',
+                    updatedAt: new Date().toLocaleString()
+                }, { merge: true });
+                console.log("已同步資料至 Firebase 雲端！");
+            } catch (err) {
+                console.error("Cloud save error:", err);
+            }
+        };
+
+        // 從 Firebase 讀取資料填入教師後台
+        window.fetchTeacherDashboardFromCloud = async function() {
+            const tbody = document.getElementById('teacher-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">正在同步雲端資料中...</td></tr>`;
+
+            try {
+                const filterClass = document.getElementById('teacher-class-filter')?.value || 'ALL';
+                const colRef = collection(db, 'student_progress');
+                const querySnapshot = await getDocs(colRef);
+                
+                let records = [];
+                querySnapshot.forEach(docSnap => {
+                    const d = docSnap.data();
+                    if (filterClass === 'ALL' || d.class === filterClass) {
+                        records.push(d);
+                    }
+                });
+
+                records.sort((a, b) => (a.class + a.seat).localeCompare(b.class + b.seat));
+
+                if (records.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">雲端尚無該班級學習紀錄</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = records.map(r => `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-3 font-mono">${r.class}班 ${r.seat}號</td>
+                        <td class="p-3 font-black text-slate-800">${r.name}</td>
+                        <td class="p-3 font-bold text-amber-600">${r.attempts || 0} 次</td>
+                        <td class="p-3 font-bold text-emerald-600">${r.raceBest || 0} cm</td>
+                        <td class="p-3 text-slate-600">${r.poopState || '24小時 (健康)'}</td>
+                        <td class="p-3 font-black ${r.quizScore >= 80 ? 'text-emerald-600' : 'text-slate-700'}">${r.quizScore !== '未完成' ? r.quizScore + ' 分' : '未完成'}</td>
+                        <td class="p-3 text-xs text-slate-400 font-mono">${r.updatedAt || ''}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Fetch teacher dashboard error:", err);
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-rose-500">雲端讀取失敗，請確認 Firebase 資料庫權限與連線狀態</td></tr>`;
+            }
+        };
+    </script>
 
     <!-- Global Application Engine Script -->
     <script>
+        window.currentStudent = {
+            class: '',
+            seat: '',
+            name: '',
+            key: ''
+        };
+
+        let studentProgressDB = JSON.parse(localStorage.getItem('student_digest_progress_db') || '{}');
+
+        function populateLoginDropdowns() {
+            const classSelect = document.getElementById('login-class');
+            const seatSelect = document.getElementById('login-seat');
+            const teacherFilter = document.getElementById('teacher-class-filter');
+
+            if (classSelect) {
+                let classOptions = '<option value="" disabled selected>請選擇班級</option>';
+                for (let i = 701; i <= 715; i++) {
+                    classOptions += `<option value="${i}">${i} 班</option>`;
+                }
+                classSelect.innerHTML = classOptions;
+            }
+
+            if (teacherFilter) {
+                let filterOptions = '<option value="ALL">全部班級 (701~715)</option>';
+                for (let i = 701; i <= 715; i++) {
+                    filterOptions += `<option value="${i}">${i} 班</option>`;
+                }
+                teacherFilter.innerHTML = filterOptions;
+            }
+
+            if (seatSelect) {
+                let seatOptions = '<option value="" disabled selected>請選擇座號</option>';
+                for (let i = 1; i <= 30; i++) {
+                    const seatNum = String(i).padStart(2, '0');
+                    seatOptions += `<option value="${seatNum}">${seatNum} 號</option>`;
+                }
+                seatSelect.innerHTML = seatOptions;
+            }
+        }
+
+        window.handleStudentLogin = function(e) {
+            e.preventDefault();
+            const cls = document.getElementById('login-class').value;
+            const seat = document.getElementById('login-seat').value;
+            const name = document.getElementById('login-name').value.trim();
+
+            if (!cls || !seat || !name) {
+                alert("請完整選擇班級、座號並輸入姓名！");
+                return;
+            }
+
+            const studentKey = `${cls}_${seat}_${name}`;
+            window.currentStudent = { class: cls, seat: seat, name: name, key: studentKey };
+
+            if (studentProgressDB[studentKey]) {
+                const rec = studentProgressDB[studentKey];
+                attempts = rec.attempts || 0;
+                quizScore = rec.quizScore || 0;
+                alert(`歡迎回來，${cls}班 ${seat}號 ${name}！已為你載入之前的學習進度與紀錄。`);
+            } else {
+                studentProgressDB[studentKey] = {
+                    class: cls,
+                    seat: seat,
+                    name: name,
+                    attempts: 0,
+                    raceBest: 0,
+                    poopState: '24小時 (健康)',
+                    quizScore: '未完成',
+                    updatedAt: new Date().toLocaleString()
+                };
+                localStorage.setItem('student_digest_progress_db', JSON.stringify(studentProgressDB));
+            }
+
+            const userDisplay = document.getElementById('current-user-display');
+            const userBadge = document.getElementById('user-info-badge');
+            if (userDisplay) userDisplay.innerText = `${cls}班${seat}號 ${name}`;
+            if (userBadge) userBadge.classList.remove('hidden');
+
+            const loginOverlay = document.getElementById('login-overlay');
+            if (loginOverlay) loginOverlay.classList.add('hidden');
+
+            if (window.saveStudentProgressToCloud) {
+                window.saveStudentProgressToCloud(studentProgressDB[studentKey]);
+            }
+        };
+
         const STAGE_NAMES = [
             '1. 順序排序',
             '2. 口腔與唾腺',
@@ -973,29 +1200,6 @@
             6: { stuckPhenomenon: "糞便已經形成，但找不到對外的出口進行排泄！", guidedInquiry: "想一想：消化道最末端負責排出的出口是什麼？" }
         };
 
-        const QUESTION_BANK_20 = [
-            { q: "1. 下列哪一個消化器官『不含有』任何消化酵素，但能將脂質乳化？", options: ["A. 胃液", "B. 膽汁", "C. 胰液", "D. 唾液"], answer: 1, explain: "膽汁由肝臟製造、膽囊儲存，不含酵素，專門乳化脂質！" },
-            { q: "2. 食物主要在哪一個器官進行『大部分養分與水分的吸收』？", options: ["A. 胃", "B. 大腸", "C. 小腸", "D. 口腔"], answer: 2, explain: "小腸有絨毛增加表面積，是消化與吸收最主要的器官！" },
-            { q: "3. 關於『排遺』與『排泄』的敘述，下列何者正確？", options: ["A. 肛門排出糞便屬於排泄", "B. 排遺是指排出細胞代謝後的廢物", "C. 糞便是未經細胞利用的殘渣，故排出糞便稱為排遺", "D. 腎臟形成尿液屬於排遺"], answer: 2, explain: "糞便為未吸收殘渣，經肛門排出稱為排遺！" },
-            { q: "4. 馬歇爾醫師喝下幽門螺旋桿菌培養液，證明了何種疾病的成因？", options: ["A. 闌尾炎", "B. 胃潰瘍與胃炎", "C. 口腔潰瘍", "D. 脂肪肝"], answer: 1, explain: "馬歇爾醫師證明幽門螺旋桿菌是胃炎與胃潰瘍的主因，榮獲諾貝爾獎！" },
-            { q: "5. 唾液中含有唾液澱粉酶，主要能將大分子的澱粉分解為什麼？", options: ["A. 胺基酸", "B. 脂肪酸", "C. 麥芽糖", "D. 蛋白質"], answer: 2, explain: "唾液澱粉酶能將澱粉初步分解為麥芽糖/糖類！" },
-            { q: "6. 吞嚥時，哪一個結構會自動向下蓋住氣管開口以防嗆到？", options: ["A. 聲帶", "B. 會厭軟骨", "C. 甲狀腺", "D. 懸壅垂"], answer: 1, explain: "會厭軟骨在吞嚥時蓋住氣管，防止食物掉入！" },
-            { q: "7. 澱粉試劑（碘液）遇到澱粉時會呈現什麼顏色？", options: ["A. 淺藍色", "B. 藍黑色", "C. 鮮紅色", "D. 綠色"], answer: 1, explain: "碘液檢驗澱粉呈現藍黑色！" },
-            { q: "8. 本氏液檢驗糖類，隔水加熱後若含有糖分會出現什麼顏色變化？", options: ["A. 淺藍色轉藍黑色", "B. 綠色、黃色到橙紅色", "C. 黃褐色轉無色", "D. 紫色轉粉紅色"], answer: 1, explain: "本氏液檢驗糖類呈現綠➔黃➔橙➔紅的變化！" },
-            { q: "9. 胃液中含有何種成分，能提供強酸環境活化胃蛋白酶並殺菌？", options: ["A. 膽汁酸", "B. 醋酸", "C. 鹽酸 (胃酸)", "D. 碳酸水"], answer: 2, explain: "胃腺分泌鹽酸（胃酸）提供強酸環境！" },
-            { q: "10. 小腸內壁具備何種結構，能大幅增加吸收養分的表面積？", options: ["A. 環狀皺褶與絨毛", "B. 纖毛與鞭毛", "C. 樹突與軸突", "D. 氣孔"], answer: 0, explain: "環狀皺褶與絨毛使小腸吸收面積擴大數百倍！" },
-            { q: "11. 胰臟分泌的胰液會注入哪一個消化器官？", options: ["A. 胃", "B. 口腔", "C. 小腸", "D. 大腸"], answer: 2, explain: "胰液經管道注入小腸前段！" },
-            { q: "12. 蛋白質在人體消化道中，最早在哪一個器官開始進行化學分解？", options: ["A. 口腔", "B. 食道", "C. 胃", "D. 小腸"], answer: 2, explain: "蛋白質最早在胃中由胃蛋白酶初步分解！" },
-            { q: "13. 膽汁由哪一個器官『製造』？", options: ["A. 膽囊", "B. 肝臟", "C. 胰臟", "D. 脾臟"], answer: 1, explain: "膽汁由肝臟製造，儲存於膽囊！" },
-            { q: "14. 水溶性養分（如葡萄糖、胺基酸）主要由絨毛內的什麼結構吸收？", options: ["A. 微血管", "B. 乳糜管 (淋巴管)", "C. 神經纖維", "D. 動脈"], answer: 0, explain: "水溶性養分由絨毛內的微血管吸收！" },
-            { q: "15. 大腸的主要功能是什麼？", options: ["A. 化學分解蛋白質", "B. 分泌膽汁", "C. 吸收殘渣中剩餘的水分與礦物質", "D. 切碎食物"], answer: 2, explain: "大腸不含消化酶，主要吸收水分與礦物質形成糞便！" },
-            { q: "16. 為什麼吃飯時不宜邊大笑邊說話？", options: ["A. 容易胃酸逆流", "B. 會厭軟骨打開，食物易誤入氣管嗆到", "C. 牙齒會咬到舌頭", "D. 唾液會停止分泌"], answer: 1, explain: "說話時氣管開啟，會厭軟骨未蓋住容易嗆到！" },
-            { q: "17. 食物在食道中主要依靠什麼力量向胃推進？", options: ["A. 重力自由落體", "B. 地心引力與水流", "C. 食道管壁肌肉收縮蠕動", "D. 氣壓推進"], answer: 2, explain: "食道靠肌肉收縮蠕動推進食物！" },
-            { q: "18. 膳食纖維雖然無法被身體消化吸收，但對人體有何好處？", options: ["A. 提供大量熱量", "B. 增加糞便體積並促進腸道蠕動", "C. 轉化成蛋白質", "D. 殺死胃部細菌"], answer: 1, explain: "膳食纖維能促進腸道蠕動預防便秘！" },
-            { q: "19. 若大腸蠕動過快、吸收水分時間不足，會引發什麼現象？", options: ["A. 便秘", "B. 腹瀉 (拉肚子)", "C. 胃潰瘍", "D. 闌尾炎"], answer: 1, explain: "大腸來不及吸收水分會導致腹瀉！" },
-            { q: "20. 脂溶性養分（如脂肪酸、維生素A）主要由絨毛內的何種結構吸收？", options: ["A. 微血管", "B. 乳糜管 (淋巴管)", "C. 紅血球", "D. 汗腺"], answer: 1, explain: "脂溶性養分由絨毛中的乳糜管（淋巴管）吸收！" }
-        ];
-
         let currentStage = 0;
         let currentCards = [];
         let attempts = 0;
@@ -1004,15 +1208,23 @@
         let isGameCleared = false;
         let isSimulating = false;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initGame();
-            renderStepper();
-            setupEventListeners();
-            initStage1Game();
-            initStage4Nutrients();
-            initNutrientAdventureGame();
-        });
+        let bileDoses = 0;
+        let nutrientsData = [];
 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Initialize stage 0 sorting state and timer
         function initGame() {
             currentCards = shuffleArray([...PIPELINE_ORGANS]);
             attempts = 0;
@@ -1022,474 +1234,10 @@
 
             const attemptEl = document.getElementById('attempt-count');
             if (attemptEl) attemptEl.innerText = attempts;
+
             startTimer();
             renderPipelineNodes();
             renderCards();
-        }
-
-        // Integrated Mini Game 5 Engine: Intestinal Nutrient Adventure
-        function initNutrientAdventureGame() {
-            const canvas = document.getElementById('gameCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-
-            const startOverlay = document.getElementById('startOverlay');
-            const gameOverOverlay = document.getElementById('gameOverOverlay');
-            const hud = document.getElementById('hud');
-            const scoreText = document.getElementById('scoreText');
-            const speedText = document.getElementById('speedText');
-            const progressBar = document.getElementById('progressBar');
-            const gameOverTitle = document.getElementById('gameOverTitle');
-            const gameOverSub = document.getElementById('gameOverSub');
-            const statusIcon = document.getElementById('statusIcon');
-            const finalScore = document.getElementById('finalScore');
-            const highScore = document.getElementById('highScore');
-            const startBtn = document.getElementById('startBtn');
-            const restartBtn = document.getElementById('restartBtn');
-            const leftBtn = document.getElementById('leftBtn');
-            const rightBtn = document.getElementById('rightBtn');
-
-            let width = 360;
-            let height = 500;
-
-            function resizeCanvas() {
-                if (!canvas.parentElement) return;
-                const rect = canvas.parentElement.getBoundingClientRect();
-                canvas.width = rect.width || 360;
-                canvas.height = rect.height || 500;
-                width = canvas.width;
-                height = canvas.height;
-            }
-
-            window.addEventListener('resize', resizeCanvas);
-            resizeCanvas();
-
-            let gameState = 'START';
-            let score = 0;
-            let bestScore = localStorage.getItem('nutrient_high_score_cm') || 0;
-            let scrollSpeed = 0.9;
-            let initialSpeed = 0.9;
-            let distance = 0;
-            const TOTAL_INTESTINE_LENGTH = 600;
-            let frameCount = 0;
-
-            const player = {
-                x: width / 2,
-                y: height - 90,
-                radius: 8,
-                speed: 5.5,
-                glow: 14,
-                trail: [],
-                scale: 1.0
-            };
-
-            let wallSegments = [];
-            const segmentHeight = 6;
-            let foldPhase = 0;
-
-            const keys = { left: false, right: false };
-            let particles = [];
-            let bonusItems = [];
-
-            window.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
-                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
-            });
-
-            window.addEventListener('keyup', (e) => {
-                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
-                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
-            });
-
-            const setupTouchBtn = (btn, keyProp) => {
-                if (!btn) return;
-                const startEvent = (e) => { e.preventDefault(); keys[keyProp] = true; };
-                const endEvent = (e) => { e.preventDefault(); keys[keyProp] = false; };
-                
-                btn.addEventListener('touchstart', startEvent);
-                btn.addEventListener('touchend', endEvent);
-                btn.addEventListener('mousedown', startEvent);
-                btn.addEventListener('mouseup', endEvent);
-                btn.addEventListener('mouseleave', endEvent);
-            };
-
-            function triggerGameOver(isWin = false) {
-                if (gameState !== 'PLAYING') return;
-                gameState = 'ABSORBING';
-
-                if (isWin) {
-                    for (let i = 0; i < 40; i++) {
-                        particles.push({
-                            x: player.x,
-                            y: player.y,
-                            vx: (Math.random() - 0.5) * 8,
-                            vy: (Math.random() - 0.5) * 8,
-                            radius: Math.random() * 5 + 3,
-                            color: i % 2 === 0 ? '#34d399' : '#fbbf24',
-                            life: 1.2
-                        });
-                    }
-                } else {
-                    for (let i = 0; i < 25; i++) {
-                        particles.push({
-                            x: player.x,
-                            y: player.y,
-                            vx: (Math.random() - 0.5) * 6,
-                            vy: (Math.random() - 0.5) * 6,
-                            radius: Math.random() * 4 + 2,
-                            color: i % 2 === 0 ? '#fde047' : '#f43f5e',
-                            life: 1.0
-                        });
-                    }
-                }
-
-                let shrinkInterval = setInterval(() => {
-                    player.scale -= 0.08;
-                    if (player.scale <= 0) {
-                        player.scale = 0;
-                        clearInterval(shrinkInterval);
-                        gameState = 'GAMEOVER';
-
-                        let finalDist = Math.min(TOTAL_INTESTINE_LENGTH, Math.floor(distance));
-                        if (finalDist > bestScore) {
-                            bestScore = finalDist;
-                            localStorage.setItem('nutrient_high_score_cm', bestScore);
-                        }
-
-                        if (isWin) {
-                            gameOverTitle.innerText = "抵達大腸！";
-                            gameOverTitle.className = "text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-400 mb-1 drop-shadow-lg";
-                            gameOverSub.innerText = "太棒了！養分完美穿過 600 公分的小腸成功到達大腸！";
-                            statusIcon.innerHTML = `<i class="fa-solid fa-flag-checkered text-emerald-400"></i>`;
-                            statusIcon.className = "w-16 h-16 bg-emerald-500/20 border-2 border-emerald-400 rounded-full flex items-center justify-center mb-2 text-2xl animate-bounce";
-                        } else {
-                            gameOverTitle.innerText = "養分被小腸吸收！";
-                            gameOverTitle.className = "text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 mb-1 drop-shadow-lg";
-                            gameOverSub.innerText = "任務結束！你已成功的為身體提供能量";
-                            statusIcon.innerHTML = `<i class="fa-solid fa-sponge text-amber-300"></i>`;
-                            statusIcon.className = "w-16 h-16 bg-amber-500/20 border-2 border-amber-400 rounded-full flex items-center justify-center mb-2 text-2xl animate-bounce";
-                        }
-
-                        finalScore.innerText = `${finalDist} cm`;
-                        highScore.innerText = `${bestScore} cm`;
-
-                        hud.classList.add('hidden');
-                        gameOverOverlay.classList.remove('hidden');
-                    }
-                }, 30);
-            }
-
-            function generateWallSegment(yPos, isInit = false) {
-                frameCount++;
-                foldPhase += 0.045;
-
-                let baseSin = Math.sin(foldPhase);
-                let detailSin = Math.sin(foldPhase * 2.5) * 0.3;
-                let combinedCurve = baseSin + detailSin;
-
-                let safetyFactor = isInit ? 0.15 : Math.min(1.0, distance / 80);
-                let maxSwing = width * 0.38 * safetyFactor;
-                let pathCenter = (width / 2) + combinedCurve * maxSwing;
-
-                let minWidth = 60;
-                let startWidth = 110;
-                let currentPathWidth = Math.max(minWidth, startWidth - Math.floor(distance / 12));
-
-                let leftEdge = pathCenter - (currentPathWidth / 2);
-                let rightEdge = pathCenter + (currentPathWidth / 2);
-
-                const margin = 28;
-                if (leftEdge < margin) {
-                    leftEdge = margin;
-                    rightEdge = leftEdge + currentPathWidth;
-                }
-                if (rightEdge > width - margin) {
-                    rightEdge = width - margin;
-                    leftEdge = rightEdge - currentPathWidth;
-                }
-
-                if (!isInit && Math.random() < 0.03 && frameCount % 35 === 0) {
-                    bonusItems.push({
-                        x: leftEdge + 10 + Math.random() * (rightEdge - leftEdge - 20),
-                        y: yPos,
-                        radius: 5,
-                        collected: false
-                    });
-                }
-
-                return {
-                    y: yPos,
-                    left: leftEdge,
-                    right: width - rightEdge,
-                    isFoldPeak: Math.abs(Math.cos(foldPhase)) > 0.85
-                };
-            }
-
-            function update() {
-                if (gameState !== 'PLAYING') return;
-
-                distance += scrollSpeed * 0.08;
-                scrollSpeed = initialSpeed + (distance / 350);
-
-                let curCm = Math.min(TOTAL_INTESTINE_LENGTH, Math.floor(distance));
-                scoreText.innerText = `${curCm}`;
-                speedText.innerText = `${(scrollSpeed / initialSpeed).toFixed(1)}`;
-                progressBar.style.width = `${(curCm / TOTAL_INTESTINE_LENGTH) * 100}%`;
-
-                if (distance >= TOTAL_INTESTINE_LENGTH) {
-                    triggerGameOver(true);
-                    return;
-                }
-
-                if (keys.left) player.x -= player.speed;
-                if (keys.right) player.x += player.speed;
-
-                player.trail.push({ x: player.x, y: player.y + 4, radius: player.radius * 0.65, alpha: 1 });
-                if (player.trail.length > 8) player.trail.shift();
-
-                for (let i = 0; i < wallSegments.length; i++) {
-                    wallSegments[i].y += scrollSpeed;
-                }
-
-                for (let i = bonusItems.length - 1; i >= 0; i--) {
-                    let b = bonusItems[i];
-                    b.y += scrollSpeed;
-
-                    let dist = Math.hypot(player.x - b.x, player.y - b.y);
-                    if (!b.collected && dist < player.radius + b.radius) {
-                        b.collected = true;
-                        distance += 15;
-                        
-                        for (let p = 0; p < 6; p++) {
-                            particles.push({
-                                x: b.x, y: b.y,
-                                vx: (Math.random() - 0.5) * 3,
-                                vy: (Math.random() - 0.5) * 3,
-                                radius: 3,
-                                color: '#fbbf24',
-                                life: 1
-                            });
-                        }
-                    }
-
-                    if (b.y > height + 20) bonusItems.splice(i, 1);
-                }
-
-                while (wallSegments.length > 0 && wallSegments[0].y > height + segmentHeight) {
-                    wallSegments.shift();
-                }
-
-                let topY = wallSegments.length > 0 ? wallSegments[wallSegments.length - 1].y : height;
-                while (topY > -segmentHeight * 2) {
-                    topY -= segmentHeight;
-                    wallSegments.push(generateWallSegment(topY));
-                }
-
-                for (let seg of wallSegments) {
-                    if (Math.abs(seg.y - player.y) < segmentHeight * 1.2) {
-                        if (player.x - player.radius + 1 < seg.left || player.x + player.radius - 1 > width - seg.right) {
-                            triggerGameOver(false);
-                            break;
-                        }
-                    }
-                }
-
-                if (player.x - player.radius < 0) player.x = player.radius;
-                if (player.x + player.radius > width) player.x = width - player.radius;
-
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    let p = particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.life -= 0.04;
-                    if (p.life <= 0) particles.splice(i, 1);
-                }
-            }
-
-            function draw() {
-                ctx.fillStyle = '#2c0b12';
-                ctx.fillRect(0, 0, width, height);
-
-                if (wallSegments.length > 0) {
-                    ctx.fillStyle = '#881337';
-                    ctx.fillRect(0, 0, 18, height);
-                    ctx.fillRect(width - 18, 0, 18, height);
-
-                    ctx.fillStyle = '#fef3c7';
-                    ctx.fillRect(14, 0, 12, height);
-                    ctx.fillRect(width - 26, 0, 12, height);
-
-                    ctx.fillStyle = '#e11d48';
-                    ctx.strokeStyle = '#9f1239';
-                    ctx.lineWidth = 2;
-
-                    ctx.beginPath();
-                    ctx.moveTo(0, wallSegments[0].y);
-                    for (let i = 0; i < wallSegments.length; i++) {
-                        let seg = wallSegments[i];
-                        ctx.lineTo(seg.left, seg.y);
-                    }
-                    ctx.lineTo(0, wallSegments[wallSegments.length - 1].y);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.beginPath();
-                    ctx.moveTo(width, wallSegments[0].y);
-                    for (let i = 0; i < wallSegments.length; i++) {
-                        let seg = wallSegments[i];
-                        ctx.lineTo(width - seg.right, seg.y);
-                    }
-                    ctx.lineTo(width, wallSegments[wallSegments.length - 1].y);
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = '#f43f5e';
-                    ctx.strokeStyle = '#fda4af';
-                    ctx.lineWidth = 1;
-
-                    for (let i = 0; i < wallSegments.length; i++) {
-                        let seg = wallSegments[i];
-                        let leftX = seg.left;
-                        let y = seg.y;
-
-                        ctx.beginPath();
-                        ctx.arc(leftX, y, 3.5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-
-                        if (seg.isFoldPeak) {
-                            ctx.beginPath();
-                            ctx.arc(leftX - 4, y - 2, 2.5, 0, Math.PI * 2);
-                            ctx.arc(leftX - 4, y + 2, 2.5, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-
-                        let rightX = width - seg.right;
-                        ctx.beginPath();
-                        ctx.arc(rightX, y, 3.5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-
-                        if (seg.isFoldPeak) {
-                            ctx.beginPath();
-                            ctx.arc(rightX + 4, y - 2, 2.5, 0, Math.PI * 2);
-                            ctx.arc(rightX + 4, y + 2, 2.5, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    }
-                }
-
-                for (let b of bonusItems) {
-                    if (!b.collected) {
-                        ctx.save();
-                        ctx.shadowColor = '#fbbf24';
-                        ctx.shadowBlur = 8;
-                        ctx.fillStyle = '#fef08a';
-                        ctx.beginPath();
-                        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.restore();
-                    }
-                }
-
-                for (let i = 0; i < player.trail.length; i++) {
-                    let t = player.trail[i];
-                    let ratio = i / player.trail.length;
-                    ctx.fillStyle = `rgba(253, 224, 71, ${ratio * 0.45})`;
-                    ctx.beginPath();
-                    ctx.arc(t.x, t.y, t.radius * ratio * player.scale, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                if (player.scale > 0 && (gameState === 'PLAYING' || gameState === 'START' || gameState === 'ABSORBING')) {
-                    ctx.save();
-                    ctx.shadowColor = '#f59e0b';
-                    ctx.shadowBlur = player.glow * player.scale;
-
-                    let r = player.radius * player.scale;
-                    let gradient = ctx.createRadialGradient(
-                        player.x - 2, player.y - 2, 1,
-                        player.x, player.y, Math.max(1, r)
-                    );
-                    gradient.addColorStop(0, '#ffffff');
-                    gradient.addColorStop(0.3, '#fde047');
-                    gradient.addColorStop(1, '#d97706');
-
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.arc(player.x, player.y, Math.max(0.1, r), 0, Math.PI * 2);
-                    ctx.fill();
-
-                    if (gameState === 'PLAYING') {
-                        ctx.strokeStyle = 'rgba(251, 191, 36, 0.7)';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.arc(player.x, player.y, r + 3 + Math.sin(Date.now() * 0.01) * 2, 0, Math.PI * 2);
-                        ctx.stroke();
-                    }
-
-                    ctx.restore();
-                }
-
-                for (let p of particles) {
-                    ctx.fillStyle = p.color;
-                    ctx.globalAlpha = Math.max(0, p.life);
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.globalAlpha = 1.0;
-                }
-            }
-
-            function gameLoop() {
-                update();
-                draw();
-                requestAnimationFrame(gameLoop);
-            }
-
-            setupTouchBtn(leftBtn, 'left');
-            setupTouchBtn(rightBtn, 'right');
-
-            if (startBtn) {
-                startBtn.addEventListener('click', () => {
-                    resetGame();
-                    startOverlay.classList.add('hidden');
-                    hud.classList.remove('hidden');
-                    gameState = 'PLAYING';
-                });
-            }
-
-            if (restartBtn) {
-                restartBtn.addEventListener('click', () => {
-                    resetGame();
-                    gameOverOverlay.classList.add('hidden');
-                    hud.classList.remove('hidden');
-                    gameState = 'PLAYING';
-                });
-            }
-
-            function resetGame() {
-                distance = 0;
-                scrollSpeed = initialSpeed;
-                player.x = width / 2;
-                player.y = height - 90;
-                player.scale = 1.0;
-                player.trail = [];
-                particles = [];
-                bonusItems = [];
-                
-                wallSegments = [];
-                foldPhase = 0;
-                frameCount = 0;
-                for (let y = height; y > -segmentHeight * 10; y -= segmentHeight) {
-                    wallSegments.push(generateWallSegment(y, true));
-                }
-            }
-
-            resetGame();
-            gameLoop();
         }
 
         function startTimer() {
@@ -1503,25 +1251,16 @@
             }, 1000);
         }
 
-        function shuffleArray(array) {
-            const arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-        }
-
         function renderStepper() {
             const stepper = document.getElementById('stage-stepper');
-            if(!stepper) return;
+            if (!stepper) return;
             stepper.innerHTML = STAGE_NAMES.map((name, idx) => `
                 <button onclick="goToStage(${idx})" class="px-3 py-1 rounded-lg transition whitespace-nowrap text-sm ${currentStage === idx ? 'bg-emerald-600 text-white font-black shadow' : 'bg-emerald-900/40 text-emerald-200 hover:bg-emerald-700/50 font-bold'}">
                     ${name}
                 </button>
             `).join('');
-            const progressEl = document.getElementById('stage-progress-text');
-            if (progressEl) progressEl.innerText = `關卡進度 ${currentStage + 1} / 8`;
+            const progressText = document.getElementById('stage-progress-text');
+            if (progressText) progressText.innerText = `關卡進度 ${currentStage + 1} / 8`;
         }
 
         window.goToStage = function(stageIdx) {
@@ -1529,25 +1268,110 @@
                 alert("請先完成第一關【消化道順序排排看】並成功通過測試後，才能前往後續探險喔！");
                 return;
             }
-            document.getElementById(`stage-${currentStage}`).classList.add('hidden');
+            const currentStageEl = document.getElementById(`stage-${currentStage}`);
+            if (currentStageEl) currentStageEl.classList.add('hidden');
+
             currentStage = stageIdx;
-            document.getElementById(`stage-${currentStage}`).classList.remove('hidden');
+
+            const nextStageEl = document.getElementById(`stage-${currentStage}`);
+            if (nextStageEl) nextStageEl.classList.remove('hidden');
+
             renderStepper();
             if (stageIdx === 7) startNewQuizRound();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
+        document.addEventListener('DOMContentLoaded', () => {
+            populateLoginDropdowns();
+            initGame();
+            renderStepper();
+            initStage1Game();
+            initStage4Nutrients();
+            initNutrientAdventureGame();
+            setupGlobalEventListeners();
+        });
+
+        function setupGlobalEventListeners() {
+            const btnReset = document.getElementById('btn-reset');
+            if (btnReset) {
+                btnReset.addEventListener('click', () => {
+                    if (isSimulating) return;
+                    currentCards = shuffleArray([...PIPELINE_ORGANS]);
+                    renderCards();
+                    renderPipelineNodes();
+                    resetFeedbackPanel();
+                });
+            }
+
+            const btnInst = document.getElementById('btn-instructions');
+            if (btnInst) {
+                btnInst.addEventListener('click', () => {
+                    const modalInst = document.getElementById('modal-instructions');
+                    if (modalInst) modalInst.classList.remove('hidden');
+                });
+            }
+
+            document.querySelectorAll('.btn-close-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.fixed').forEach(m => {
+                        if (m.id !== 'login-overlay') m.classList.add('hidden');
+                    });
+                });
+            });
+        }
+
+        window.openTeacherModal = function() {
+            const pwd = prompt("請輸入教師後台管理密碼：", "");
+            if (pwd === "8888") {
+                const modalTeacher = document.getElementById('modal-teacher');
+                if (modalTeacher) modalTeacher.classList.remove('hidden');
+                if (window.renderTeacherDashboard) window.renderTeacherDashboard();
+            } else if (pwd !== null) {
+                alert("密碼錯誤！請輸入正確的教師密碼。");
+            }
+        };
+
+        window.renderTeacherDashboard = function() {
+            if (window.fetchTeacherDashboardFromCloud) {
+                window.fetchTeacherDashboardFromCloud();
+            }
+        };
+
+        window.exportTeacherExcel = function() {
+            const filterClass = document.getElementById('teacher-class-filter')?.value || 'ALL';
+            let records = Object.values(studentProgressDB).filter(r => filterClass === 'ALL' || r.class === filterClass);
+            
+            if (records.length === 0) {
+                alert("目前沒有資料可匯出！");
+                return;
+            }
+
+            let csvContent = "\uFEFF班級,座號,姓名,排序嘗試次數,小腸大冒險最佳(cm),大腸水分狀態,綜合測驗得分,更新時間\n";
+            records.forEach(r => {
+                csvContent += `"${r.class}","${r.seat}","${r.name}","${r.attempts || 0}","${r.raceBest || 0}","${r.poopState || ''}","${r.quizScore}","${r.updatedAt || ''}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `消化系統大探險_學習紀錄_${filterClass}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
         function renderPipelineNodes() {
-            const container = document.getElementById('pipeline-nodes');
+            const container = document.getElementById('vertical-pipeline-nodes');
             if (!container) return;
             container.innerHTML = '';
 
             currentCards.forEach((item, index) => {
                 const node = document.createElement('div');
-                node.id = `pipe-node-${index}`;
-                node.className = `pipe-node w-14 h-14 md:w-18 md:h-18 rounded-full bg-slate-800 border-4 border-slate-600 flex flex-col items-center justify-center font-black text-xs md:text-sm text-slate-200 shadow-md relative group cursor-pointer`;
+                node.id = `v-pipe-node-${index}`;
+                node.className = `pipe-node w-full h-10 rounded-xl bg-slate-800 border-2 border-slate-600 flex items-center justify-between px-3 font-bold text-xs text-slate-200 shadow-md relative z-10`;
                 node.innerHTML = `
-                    <span>${isGameCleared ? item.name : '第' + (index + 1) + '關'}</span>
+                    <span class="bg-slate-700 px-2 py-0.5 rounded text-[10px] text-amber-300 font-mono">關卡 ${index + 1}</span>
+                    <span class="truncate max-w-[180px]">${isGameCleared ? item.icon + ' ' + item.name : item.desc}</span>
                 `;
                 container.appendChild(node);
             });
@@ -1555,35 +1379,35 @@
 
         function renderCards() {
             const container = document.getElementById('cards-container');
-            if(!container) return;
+            if (!container) return;
             container.innerHTML = '';
 
             currentCards.forEach((item, index) => {
                 const card = document.createElement('div');
-                card.className = `card-drag bg-white border-2 border-slate-200 rounded-xl p-3.5 shadow-sm flex items-center justify-between gap-3 cursor-grab active:cursor-grabbing select-none`;
+                card.className = `card-drag bg-white border-2 border-slate-200 rounded-xl p-3 shadow-xs flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing select-none`;
                 card.dataset.index = index;
                 card.draggable = true;
 
                 card.innerHTML = `
-                    <div class="flex items-center gap-3 flex-grow">
-                        <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-900 font-black text-sm flex items-center justify-center shrink-0">
+                    <div class="flex items-center gap-2 flex-grow">
+                        <span class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-900 font-black text-xs flex items-center justify-center shrink-0">
                             ${index + 1}
                         </span>
                         <div class="flex flex-col">
-                            <span class="organ-title font-bold ${isGameCleared ? 'text-emerald-700 text-base' : 'text-slate-400 text-xs'}">
-                                ${isGameCleared ? item.icon + ' ' + item.name : '功能描述卡片 ' + (index + 1)}
+                            <span class="organ-title font-bold ${isGameCleared ? 'text-emerald-700 text-sm' : 'text-slate-400 text-xs'}">
+                                ${isGameCleared ? item.icon + ' ' + item.name : '功能卡片 ' + (index + 1)}
                             </span>
-                            <p class="text-sm md:text-base font-bold text-slate-800 leading-snug">
+                            <p class="text-xs md:text-sm font-bold text-slate-800 leading-snug">
                                 ${item.desc}
                             </p>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-1 shrink-0">
-                        <button onclick="moveCard(${index}, -1)" class="w-7 h-7 bg-slate-100 hover:bg-emerald-200 text-slate-700 hover:text-emerald-900 rounded-lg flex items-center justify-center text-sm font-bold transition" ${index === 0 ? 'disabled class="opacity-30 cursor-not-allowed"' : ''}>
+                        <button onclick="moveCard(${index}, -1)" class="w-7 h-7 bg-slate-100 hover:bg-emerald-200 text-slate-700 rounded-lg flex items-center justify-center text-xs font-bold transition" ${index === 0 ? 'disabled class="opacity-30 cursor-not-allowed"' : ''}>
                             <i class="fa-solid fa-chevron-up"></i>
                         </button>
-                        <button onclick="moveCard(${index}, 1)" class="w-7 h-7 bg-slate-100 hover:bg-emerald-200 text-slate-700 hover:text-emerald-900 rounded-lg flex items-center justify-center text-sm font-bold transition" ${index === currentCards.length - 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : ''}>
+                        <button onclick="moveCard(${index}, 1)" class="w-7 h-7 bg-slate-100 hover:bg-emerald-200 text-slate-700 rounded-lg flex items-center justify-center text-xs font-bold transition" ${index === currentCards.length - 1 ? 'disabled class="opacity-30 cursor-not-allowed"' : ''}>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
                     </div>
@@ -1641,69 +1465,32 @@
             this.classList.remove('card-dragging');
         }
 
-        function setupEventListeners() {
-            document.querySelectorAll('.food-btn').forEach(btn => {
-                btn.addEventListener('click', () => startPipelineSimulation());
-            });
-
-            const btnReset = document.getElementById('btn-reset');
-            if (btnReset) {
-                btnReset.addEventListener('click', () => {
-                    if (isSimulating) return;
-                    currentCards = shuffleArray([...PIPELINE_ORGANS]);
-                    renderCards();
-                    renderPipelineNodes();
-                    resetFeedbackPanel();
-                });
-            }
-
-            const btnInstructions = document.getElementById('btn-instructions');
-            if (btnInstructions) {
-                btnInstructions.addEventListener('click', () => {
-                    document.getElementById('modal-instructions')?.classList.remove('hidden');
-                });
-            }
-
-            const btnRanking = document.getElementById('btn-ranking');
-            if (btnRanking) {
-                btnRanking.addEventListener('click', () => {
-                    document.getElementById('modal-ranking')?.classList.remove('hidden');
-                });
-            }
-
-            document.querySelectorAll('.btn-close-modal').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('modal-instructions')?.classList.add('hidden');
-                    document.getElementById('modal-ranking')?.classList.add('hidden');
-                });
-            });
-        }
-
-        function resetFeedbackPanel() {
-            document.getElementById('feedback-default').classList.remove('hidden');
-            document.getElementById('feedback-error').classList.add('hidden');
-            document.getElementById('feedback-success').classList.add('hidden');
-            document.getElementById('food-state-badge').innerText = "[ 狀態：完整大塊食物 ]";
-            document.getElementById('pipeline-status-text').innerText = "等待點擊食物按鈕啟動模擬...";
-        }
-
-        async function startPipelineSimulation() {
+        window.startPipelineSimulation = async function() {
             if (isSimulating) return;
             isSimulating = true;
             attempts++;
-            document.getElementById('attempt-count').innerText = attempts;
+
+            const attemptCountEl = document.getElementById('attempt-count');
+            if (attemptCountEl) attemptCountEl.innerText = attempts;
+
+            if (window.currentStudent.key && studentProgressDB[window.currentStudent.key]) {
+                studentProgressDB[window.currentStudent.key].attempts = attempts;
+                studentProgressDB[window.currentStudent.key].updatedAt = new Date().toLocaleString();
+                localStorage.setItem('student_digest_progress_db', JSON.stringify(studentProgressDB));
+                if (window.saveStudentProgressToCloud) {
+                    window.saveStudentProgressToCloud(studentProgressDB[window.currentStudent.key]);
+                }
+            }
 
             resetFeedbackPanel();
-            document.getElementById('feedback-default').classList.add('hidden');
+            const feedbackDef = document.getElementById('feedback-default');
+            if (feedbackDef) feedbackDef.classList.add('hidden');
 
-            const foodBall = document.getElementById('food-ball');
-            const foodBallIcon = document.getElementById('food-ball-icon');
-            const foodBallLabel = document.getElementById('food-ball-label');
+            const vFoodBall = document.getElementById('vertical-food-ball');
             const foodBadge = document.getElementById('food-state-badge');
+            const statusText = document.getElementById('pipeline-status-text');
 
-            foodBallIcon.innerText = '🍱';
-            foodBallLabel.innerText = "綜合大餐";
-            foodBall.classList.remove('opacity-0', 'scale-0');
+            if (vFoodBall) vFoodBall.classList.remove('opacity-0', 'scale-0');
 
             let stuckIndex = -1;
             for (let i = 0; i < currentCards.length; i++) {
@@ -1714,97 +1501,83 @@
             }
 
             for (let i = 0; i < currentCards.length; i++) {
-                const nodeEl = document.getElementById(`pipe-node-${i}`);
-                const rect = nodeEl.getBoundingClientRect();
-                const parentRect = document.getElementById('pipeline-nodes').getBoundingClientRect();
-
-                const leftPos = rect.left - parentRect.left + rect.width / 2;
-                const topPos = rect.top - parentRect.top + rect.height / 2;
-
-                foodBall.style.left = `${leftPos}px`;
-                foodBall.style.top = `${topPos}px`;
-
-                nodeEl.classList.add('active');
+                const vNodeEl = document.getElementById(`v-pipe-node-${i}`);
+                if (vNodeEl) vNodeEl.classList.add('active');
 
                 const nodeData = currentCards[i];
-                if (nodeData.id === 'mouth') {
-                    foodBallIcon.innerText = "✨";
-                    foodBallLabel.innerText = "碎化糊化";
-                    foodBadge.innerText = "[ 狀態：食物被切碎、唾液潤滑並初步分解澱粉 ]";
-                } else if (nodeData.id === 'esophagus') {
-                    foodBallIcon.innerText = "⬇️";
-                    foodBallLabel.innerText = "肌肉推進";
-                    foodBadge.innerText = "[ 狀態：經食道肌肉收縮蠕動向下推進 ]";
-                } else if (nodeData.id === 'stomach') {
-                    foodBallIcon.innerText = "🧪";
-                    foodBallLabel.innerText = "酸性乳糜";
-                    foodBadge.innerText = "[ 狀態：胃液酸性環境，蛋白質初步分解 ]";
-                } else if (nodeData.id === 'small_intestine') {
-                    foodBallIcon.innerText = "💧";
-                    foodBallLabel.innerText = "養分微粒";
-                    foodBadge.innerText = "[ 狀態：三大養分徹底分解為小分子並由絨毛吸收 ]";
-                } else if (nodeData.id === 'large_intestine') {
-                    foodBallIcon.innerText = "🟤";
-                    foodBallLabel.innerText = "固態泥團";
-                    foodBadge.innerText = "[ 狀態：剩餘水分被吸收，殘渣形成糞便 ]";
-                } else if (nodeData.id === 'anus') {
-                    foodBallIcon.innerText = "💩";
-                    foodBallLabel.innerText = "廢物排出";
-                    foodBadge.innerText = "[ 狀態：殘渣（便便）順利排出體外 ]";
-                }
+                let stateDesc = '';
+                if (nodeData.id === 'mouth') stateDesc = "[ 狀態：食物被切碎、唾液潤滑並初步分解澱粉 ]";
+                else if (nodeData.id === 'esophagus') stateDesc = "[ 狀態：經食道肌肉收縮蠕動向下推進 ]";
+                else if (nodeData.id === 'stomach') stateDesc = "[ 狀態：胃液酸性環境，蛋白質初步分解 ]";
+                else if (nodeData.id === 'small_intestine') stateDesc = "[ 狀態：三大養分徹底分解為小分子並由絨毛吸收 ]";
+                else if (nodeData.id === 'large_intestine') stateDesc = "[ 狀態：剩餘水分被吸收，殘渣形成糞便 ]";
+                else if (nodeData.id === 'anus') stateDesc = "[ 狀態：殘渣（便便）順利排出體外 ]";
 
-                document.getElementById('pipeline-status-text').innerText = `食物正在進入第 ${i + 1} 關...`;
+                if (foodBadge) foodBadge.innerText = stateDesc;
+                if (statusText) statusText.innerText = `食物正在進入第 ${i + 1} 關...`;
 
                 await sleep(700);
 
                 if (i === stuckIndex) {
-                    nodeEl.classList.remove('active');
-                    nodeEl.classList.add('stuck');
+                    if (vNodeEl) { vNodeEl.classList.remove('active'); vNodeEl.classList.add('stuck'); }
 
-                    document.getElementById('pipeline-status-text').innerText = `❌ 消化中斷！食物卡在第 ${i + 1} 關！`;
-
+                    if (statusText) statusText.innerText = `❌ 消化中斷！食物卡在第 ${i + 1} 關！`;
                     showGuidedInquiryDetails(i, currentCards[i]);
                     isSimulating = false;
                     return;
                 }
 
-                nodeEl.classList.remove('active');
-                nodeEl.classList.add('passed');
+                if (vNodeEl) { vNodeEl.classList.remove('active'); vNodeEl.classList.add('passed'); }
             }
 
             isSimulating = false;
             isGameCleared = true;
 
-            document.getElementById('pipeline-status-text').innerText = `🎉 恭喜！消化道管道全線暢通！真實器官名稱已揭曉！`;
-            document.getElementById('feedback-success').classList.remove('hidden');
+            if (statusText) statusText.innerText = `🎉 恭喜！消化道管道全線暢通！真實器官名稱已揭曉！`;
+            const feedbackSuccess = document.getElementById('feedback-success');
+            if (feedbackSuccess) feedbackSuccess.classList.remove('hidden');
 
             renderCards();
             renderPipelineNodes();
             confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
+        };
+
+        function resetFeedbackPanel() {
+            const def = document.getElementById('feedback-default');
+            const err = document.getElementById('feedback-error');
+            const succ = document.getElementById('feedback-success');
+            const badge = document.getElementById('food-state-badge');
+            const status = document.getElementById('pipeline-status-text');
+
+            if (def) def.classList.remove('hidden');
+            if (err) err.classList.add('hidden');
+            if (succ) succ.classList.add('hidden');
+            if (badge) badge.innerText = "[ 狀態：完整大塊食物 ]";
+            if (status) status.innerText = "等待點擊「吃綜合大餐」啟動模擬...";
         }
 
         function showGuidedInquiryDetails(nodeIdx, organData) {
             const errorPanel = document.getElementById('feedback-error');
-            errorPanel.classList.remove('hidden');
+            if (errorPanel) errorPanel.classList.remove('hidden');
 
             const failureInfo = POSITION_FAILURE_HINTS[nodeIdx + 1];
 
-            document.getElementById('error-title').innerText = `消化中斷！卡在第 ${nodeIdx + 1} 關`;
-            document.getElementById('error-organ-at').innerText = `此位置目前排定的功能：【${organData.desc}】`;
-            document.getElementById('error-detail').innerText = `💥 觀察到的現象：${failureInfo.stuckPhenomenon}`;
-            document.getElementById('error-hint').innerText = failureInfo.guidedInquiry;
+            const title = document.getElementById('error-title');
+            const organAt = document.getElementById('error-organ-at');
+            const detail = document.getElementById('error-detail');
+            const hint = document.getElementById('error-hint');
+
+            if (title) title.innerText = `消化中斷！卡在第 ${nodeIdx + 1} 關`;
+            if (organAt) organAt.innerText = `此位置目前排定的功能：【${organData.desc}】`;
+            if (detail) detail.innerText = `💥 觀察到的現象：${failureInfo.stuckPhenomenon}`;
+            if (hint) hint.innerText = failureInfo.guidedInquiry;
         }
 
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Stage 1 Chewing
         let chewCount = 0;
         function initStage1Game() {
             const btn = document.getElementById('btn-mouth-chew');
-            if(!btn) return;
             const icon = document.getElementById('mouth-icon');
+            if (!btn || !icon) return;
 
             btn.addEventListener('mousedown', () => { icon.innerText = "👄"; });
             btn.addEventListener('mouseup', () => { icon.innerText = "😮"; processChewStep(); });
@@ -1814,61 +1587,66 @@
 
         window.resetStage1Game = function() {
             chewCount = 0;
-            document.getElementById('chew-count-text').innerText = "0 / 10 下";
-            document.getElementById('iodine-bar').style.width = "100%";
-            document.getElementById('iodine-bar').style.backgroundColor = "#1e1b4b";
-            document.getElementById('iodine-text').innerText = "深藍黑色 (澱粉多)";
-            document.getElementById('benedict-bar').style.width = "0%";
-            document.getElementById('benedict-bar').style.backgroundColor = "#3b82f6";
-            document.getElementById('benedict-text').innerText = "淺藍色 (無糖)";
-            document.getElementById('game1-status-msg').innerText = "快點擊嘴巴按鈕完成 10 次咀嚼！";
+            const countText = document.getElementById('chew-count-text');
+            const iodineBar = document.getElementById('iodine-bar');
+            const iodineText = document.getElementById('iodine-text');
+            const benedictBar = document.getElementById('benedict-bar');
+            const benedictText = document.getElementById('benedict-text');
+            const msg = document.getElementById('game1-status-msg');
+
+            if (countText) countText.innerText = "0 / 10 下";
+            if (iodineBar) { iodineBar.style.width = "100%"; iodineBar.style.backgroundColor = "#1e1b4b"; }
+            if (iodineText) iodineText.innerText = "深藍黑色 (澱粉多)";
+            if (benedictBar) { benedictBar.style.width = "0%"; benedictBar.style.backgroundColor = "#3b82f6"; }
+            if (benedictText) benedictText.innerText = "淺藍色 (無糖)";
+            if (msg) msg.innerText = "快點擊嘴巴按鈕完成 10 次咀嚼！";
         };
 
         function processChewStep() {
             chewCount++;
             if (chewCount > 10) chewCount = 10;
 
-            document.getElementById('chew-count-text').innerText = `${chewCount} / 10 下`;
+            const countText = document.getElementById('chew-count-text');
+            if (countText) countText.innerText = `${chewCount} / 10 下`;
 
             const iodineBar = document.getElementById('iodine-bar');
             const iodineText = document.getElementById('iodine-text');
             const starchPercent = 100 - (chewCount * 10);
 
             if (chewCount < 10) {
-                iodineBar.style.width = `${100 - (chewCount * 9)}%`;
-                iodineText.innerText = `藍黑色 (含有 ${starchPercent}% 未分解澱粉)`;
+                if (iodineBar) iodineBar.style.width = `${100 - (chewCount * 9)}%`;
+                if (iodineText) iodineText.innerText = `藍黑色 (含有 ${starchPercent}% 未分解澱粉)`;
             } else {
-                iodineBar.style.width = `15%`;
-                iodineBar.style.backgroundColor = `#d97706`;
-                iodineText.innerText = `黃褐色 (澱粉已被分解！)`;
+                if (iodineBar) { iodineBar.style.width = `15%`; iodineBar.style.backgroundColor = `#d97706`; }
+                if (iodineText) iodineText.innerText = `黃褐色 (澱粉已被分解！)`;
             }
 
             const benedictBar = document.getElementById('benedict-bar');
             const benedictText = document.getElementById('benedict-text');
 
-            benedictBar.style.width = `${chewCount * 10}%`;
+            if (benedictBar) benedictBar.style.width = `${chewCount * 10}%`;
 
             if (chewCount < 3) {
-                benedictBar.style.backgroundColor = `#3b82f6`;
-                benedictText.innerText = `淺藍色 (無糖)`;
+                if (benedictBar) benedictBar.style.backgroundColor = `#3b82f6`;
+                if (benedictText) benedictText.innerText = `淺藍色 (無糖)`;
             } else if (chewCount < 6) {
-                benedictBar.style.backgroundColor = `#10b981`;
-                benedictText.innerText = `綠色 (出現少量麥芽糖)`;
+                if (benedictBar) benedictBar.style.backgroundColor = `#10b981`;
+                if (benedictText) benedictText.innerText = `綠色 (出現少量麥芽糖)`;
             } else if (chewCount < 8) {
-                benedictBar.style.backgroundColor = `#eab308`;
-                benedictText.innerText = `黃色 (麥芽糖濃度增加)`;
+                if (benedictBar) benedictBar.style.backgroundColor = `#eab308`;
+                if (benedictText) benedictText.innerText = `黃色 (麥芽糖濃度增加)`;
             } else if (chewCount < 10) {
-                benedictBar.style.backgroundColor = `#f97316`;
-                benedictText.innerText = `橙色 (產生大量糖分)`;
+                if (benedictBar) benedictBar.style.backgroundColor = `#f97316`;
+                if (benedictText) benedictText.innerText = `橙色 (產生大量糖分)`;
             } else {
-                benedictBar.style.backgroundColor = `#ef4444`;
-                benedictText.innerText = `紅橙色 (呈現顯著糖分反應！)`;
-                document.getElementById('game1-status-msg').innerText = "🎉 10次咀嚼完成！澱粉成功轉化為麥芽糖！本氏液加熱呈現紅橙色！";
+                if (benedictBar) benedictBar.style.backgroundColor = `#ef4444`;
+                if (benedictText) benedictText.innerText = `紅橙色 (呈現顯著糖分反應！)`;
+                const msg = document.getElementById('game1-status-msg');
+                if (msg) msg.innerText = "🎉 10次咀嚼完成！澱粉成功轉化為麥芽糖！本氏液加熱呈現紅橙色！";
                 confetti({ particleCount: 50 });
             }
         }
 
-        // Stage 2 Swallow
         let lastSwallowTime = 0;
         window.resetStage2Game = function() {
             lastSwallowTime = 0;
@@ -1876,13 +1654,19 @@
             const food = document.getElementById('swallow-food-item');
             const feedback = document.getElementById('swallow-feedback');
 
-            gate.innerText = "呼吸中 (開啟)";
-            gate.className = "w-24 h-14 bg-emerald-500 text-slate-900 font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-emerald-300";
-            food.style.opacity = '0';
-            food.style.top = "0px";
-            food.style.left = "50%";
-            feedback.innerText = "請按按鈕進行吞嚥！試著連續快速點擊看看會發生什麼事...";
-            feedback.className = "text-sm font-bold text-amber-300";
+            if (gate) {
+                gate.innerText = "呼吸中 (開啟)";
+                gate.className = "w-24 h-14 bg-emerald-500 text-slate-900 font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-emerald-300";
+            }
+            if (food) {
+                food.style.opacity = '0';
+                food.style.top = "0px";
+                food.style.left = "50%";
+            }
+            if (feedback) {
+                feedback.innerText = "請按按鈕進行吞嚥！試著連續快速點擊看看會發生什麼事...";
+                feedback.className = "text-sm font-bold text-amber-300";
+            }
         };
 
         window.performSwallow = function() {
@@ -1894,136 +1678,158 @@
             const food = document.getElementById('swallow-food-item');
             const feedback = document.getElementById('swallow-feedback');
 
-            food.style.opacity = '1';
+            if (food) food.style.opacity = '1';
 
             if (timeDiff < 500 && timeDiff > 0) {
-                gate.innerText = "開啓中 (來不及蓋上)";
-                gate.className = "w-24 h-14 bg-amber-500 text-slate-900 font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-amber-300";
-
-                food.style.top = "90px";
-                food.style.left = "calc(50% - 70px)";
-
-                feedback.innerText = "💥 咳咳咳！吃太急/邊講話邊吃！會厭軟骨來不及蓋住氣管，食物掉入氣管引起嗆到劇烈咳嗽！";
-                feedback.className = "text-sm font-bold text-rose-400 animate-bounce";
+                if (gate) {
+                    gate.innerText = "開啓中 (來不及蓋上)";
+                    gate.className = "w-24 h-14 bg-amber-500 text-slate-900 font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-amber-300";
+                }
+                if (food) {
+                    food.style.top = "90px";
+                    food.style.left = "calc(50% - 70px)";
+                }
+                if (feedback) {
+                    feedback.innerText = "💥 咳咳咳！吃太急/邊講話邊吃！會厭軟骨來不及蓋住氣管，食物掉入氣管引起嗆到劇烈咳嗽！";
+                    feedback.className = "text-sm font-bold text-rose-400 animate-bounce";
+                }
 
                 setTimeout(() => {
-                    food.style.opacity = '0';
-                    food.style.top = "0px";
-                    food.style.left = "50%";
+                    if (food) { food.style.opacity = '0'; food.style.top = "0px"; food.style.left = "50%"; }
                 }, 1200);
                 return;
             }
 
-            gate.innerText = "已蓋住 (保護氣管)";
-            gate.className = "w-24 h-14 bg-rose-600 text-white font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-rose-300";
-
-            food.style.top = "90px";
-            food.style.left = "calc(50% + 70px)";
-
-            feedback.innerText = "✅ 吞嚥成功！會厭軟骨精準蓋住氣管，食物順利進入食道！";
-            feedback.className = "text-sm font-bold text-emerald-300";
+            if (gate) {
+                gate.innerText = "已蓋住 (保護氣管)";
+                gate.className = "w-24 h-14 bg-rose-600 text-white font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-rose-300";
+            }
+            if (food) {
+                food.style.top = "90px";
+                food.style.left = "calc(50% + 70px)";
+            }
+            if (feedback) {
+                feedback.innerText = "✅ 吞嚥成功！會厭軟骨精準蓋住氣管，食物順利進入食道！";
+                feedback.className = "text-sm font-bold text-emerald-300";
+            }
 
             setTimeout(() => {
-                food.style.opacity = '0';
-                food.style.top = "0px";
-                food.style.left = "50%";
-                gate.innerText = "呼吸中 (開啟)";
-                gate.className = "w-24 h-14 bg-emerald-500 text-slate-900 font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-emerald-300";
+                if (food) { food.style.opacity = '0'; food.style.top = "0px"; food.style.left = "50%"; }
+                if (gate) {
+                    gate.innerText = "呼吸中 (開啟)";
+                    gate.className = "w-24 h-14 bg-emerald-500 text-slate-900 font-black text-sm rounded-t-xl flex items-center justify-center border-2 border-emerald-300";
+                }
             }, 1000);
         };
 
-        // Stage 4 SVG Digestion Game Logic
-        let bileDoses = 0;
-        let nutrientsData = [];
-
         function initStage4Nutrients() {
             nutrientsData = [];
-            for (let i = 0; i < 10; i++) nutrientsData.push({ id: `starch-${i}`, type: 'starch', state: 0, text: '🟡 大澱粉塊' });
-            for (let i = 0; i < 10; i++) nutrientsData.push({ id: `protein-${i}`, type: 'protein', state: 0, text: '🔴 大蛋白質' });
-            for (let i = 0; i < 10; i++) nutrientsData.push({ id: `lipid-${i}`, type: 'lipid', state: 0, text: '🔵 大油滴塊' });
+            for (let i = 0; i < 10; i++) nutrientsData.push({ id: `starch-${i}`, type: 'starch', state: 0 });
+            for (let i = 0; i < 10; i++) nutrientsData.push({ id: `protein-${i}`, type: 'protein', state: 0 });
+            for (let i = 0; i < 10; i++) nutrientsData.push({ id: `lipid-${i}`, type: 'lipid', state: 0 });
             nutrientsData = shuffleArray(nutrientsData);
             renderStage4Nutrients();
         }
 
-        window.resetStage4Game = function() {
-            bileDoses = 0;
-            document.getElementById('gallbladder-vol').innerText = `0 份`;
-            document.getElementById('flow-bile').classList.add('hidden');
-            document.getElementById('flow-pancreas').classList.add('hidden');
-            document.getElementById('game4-status-msg').innerText = "請點擊左圖器官！1份膽汁乳化1個脂質，腸液無法消化脂質，胰臟與小腸會隨機分解1個可消化養分！";
-            initStage4Nutrients();
-        };
-
         function renderStage4Nutrients() {
             const chamber = document.getElementById('small-intestine-chamber');
-            if(!chamber) return;
-            let unclearedCount = 0;
+            if (!chamber) return;
 
+            let unclearedCount = 0;
             chamber.innerHTML = nutrientsData.map(item => {
                 let badgeClass = "bg-slate-100 border-slate-300 text-slate-700";
+                let text = "";
+
                 if (item.state === 0) {
                     unclearedCount++;
-                    if (item.type === 'starch') badgeClass = "bg-amber-100 border-amber-400 text-amber-900";
-                    if (item.type === 'protein') badgeClass = "bg-rose-100 border-rose-400 text-rose-900";
-                    if (item.type === 'lipid') badgeClass = "bg-blue-100 border-blue-400 text-blue-900";
+                    if (item.type === 'starch') { badgeClass = "bg-amber-100 border-amber-400 text-amber-900"; text = "🟡澱粉"; }
+                    if (item.type === 'protein') { badgeClass = "bg-rose-100 border-rose-400 text-rose-900"; text = "🔴蛋白"; }
+                    if (item.type === 'lipid') { badgeClass = "bg-blue-100 border-blue-400 text-blue-900"; text = "🔵大油"; }
                 } else if (item.state === 1) {
                     unclearedCount++;
-                    badgeClass = "bg-emerald-100 border-emerald-500 text-emerald-900 animate-pulse font-black";
+                    badgeClass = "bg-emerald-100 border-emerald-500 text-emerald-900 font-black animate-pulse";
+                    text = "✨小油";
                 } else {
                     badgeClass = "bg-emerald-50 border-emerald-300 text-emerald-600 opacity-60";
+                    if (item.type === 'starch') text = "✨糖";
+                    else if (item.type === 'protein') text = "🟢胺基酸";
+                    else text = "💧脂酸";
                 }
 
                 return `
-                    <div class="border ${badgeClass} p-1.5 rounded-lg text-[11px] font-bold text-center flex items-center justify-center transition-all">
-                        ${item.text}
+                    <div class="border ${badgeClass} p-1 rounded-md text-[10px] font-bold text-center flex items-center justify-center shadow-2xs">
+                        ${text}
                     </div>
                 `;
             }).join('');
 
-            document.getElementById('nutrients-count-badge').innerText = `未完全分解：${unclearedCount} / 30 顆`;
+            const badge = document.getElementById('nutrients-count-badge');
+            if (badge) badge.innerText = `未完全分解：${unclearedCount} / 30 顆`;
 
             if (unclearedCount === 0) {
-                document.getElementById('game4-status-msg').innerText = "🎉 完美分解！所有 30 塊大分子養分皆已成功拆解為可吸收的小分子！";
+                const msg = document.getElementById('game4-status-msg');
+                if (msg) msg.innerText = "🎉 完美分解！所有 30 塊大分子養分皆已成功拆解為可吸收的小分子！";
                 confetti({ particleCount: 80 });
             }
         }
 
+        window.resetStage4Game = function() {
+            bileDoses = 0;
+            const vol = document.getElementById('gallbladder-vol');
+            const flowBile = document.getElementById('flow-bile');
+            const flowPancreas = document.getElementById('flow-pancreas');
+            const msg = document.getElementById('game4-status-msg');
+
+            if (vol) vol.innerText = `0 份`;
+            if (flowBile) flowBile.classList.add('hidden');
+            if (flowPancreas) flowPancreas.classList.add('hidden');
+            if (msg) msg.innerText = "請點擊左圖器官！1份膽汁乳化1個脂質，腸液無法消化脂質，胰臟與小腸隨機分解1個養分！";
+
+            initStage4Nutrients();
+        };
+
         window.clickLiver = function() {
             bileDoses++;
-            document.getElementById('gallbladder-vol').innerText = `${bileDoses} 份`;
-            document.getElementById('game4-status-msg').innerText = `🫀 點擊肝臟！製造了 1 份膽汁，目前膽囊內共有 ${bileDoses} 份膽汁！`;
+            const vol = document.getElementById('gallbladder-vol');
+            const msg = document.getElementById('game4-status-msg');
+            if (vol) vol.innerText = `${bileDoses} 份`;
+            if (msg) msg.innerText = `🫀 點擊肝臟！製造了 1 份膽汁，目前膽囊內共有 ${bileDoses} 份膽汁！`;
         };
 
         window.clickGallbladder = function() {
+            const msg = document.getElementById('game4-status-msg');
             if (bileDoses <= 0) {
-                document.getElementById('game4-status-msg').innerText = "⚠️ 膽囊中無膽汁！請先點擊【肝臟】製造膽汁！";
+                if (msg) msg.innerText = "⚠️ 膽囊中無膽汁！請先點擊【肝臟】製造膽汁！";
                 return;
             }
 
             const unemulsifiedLipid = nutrientsData.find(item => item.type === 'lipid' && item.state === 0);
             if (!unemulsifiedLipid) {
-                document.getElementById('game4-status-msg').innerText = "💚 目前沒有未乳化的大油脂需要乳化了！";
+                if (msg) msg.innerText = "💚 目前沒有未乳化的大油脂需要乳化了！";
                 return;
             }
 
             bileDoses--;
-            document.getElementById('gallbladder-vol').innerText = `${bileDoses} 份`;
+            const vol = document.getElementById('gallbladder-vol');
+            if (vol) vol.innerText = `${bileDoses} 份`;
 
             const flowBile = document.getElementById('flow-bile');
-            flowBile.classList.remove('hidden');
-            setTimeout(() => flowBile.classList.add('hidden'), 800);
+            if (flowBile) {
+                flowBile.classList.remove('hidden');
+                setTimeout(() => flowBile.classList.add('hidden'), 800);
+            }
 
             unemulsifiedLipid.state = 1;
-            unemulsifiedLipid.text = "✨ 物理乳化小油滴";
-
-            document.getElementById('game4-status-msg').innerText = `💚 注入 1 份膽汁！成功乳化了 1 個大油脂！(剩餘膽汁：${bileDoses} 份)`;
+            if (msg) msg.innerText = `💚 注入 1 份膽汁！成功乳化了 1 個大油脂！(剩餘膽汁：${bileDoses} 份)`;
             renderStage4Nutrients();
         };
 
         window.clickPancreas = function() {
             const flowPancreas = document.getElementById('flow-pancreas');
-            flowPancreas.classList.remove('hidden');
-            setTimeout(() => flowPancreas.classList.add('hidden'), 800);
+            if (flowPancreas) {
+                flowPancreas.classList.remove('hidden');
+                setTimeout(() => flowPancreas.classList.add('hidden'), 800);
+            }
 
             const candidates = nutrientsData.filter(item => 
                 (item.type === 'starch' && item.state === 0) ||
@@ -2031,31 +1837,24 @@
                 (item.type === 'lipid' && item.state === 1)
             );
 
+            const msg = document.getElementById('game4-status-msg');
             if (candidates.length === 0) {
                 const hasUnemulsifiedLipids = nutrientsData.some(item => item.type === 'lipid' && item.state === 0);
                 if (hasUnemulsifiedLipids) {
-                    document.getElementById('game4-status-msg').innerText = "❌ 點擊胰液無效！剩餘的脂質尚未經過膽汁乳化！請先點擊【肝臟】與【膽囊】！";
+                    if (msg) msg.innerText = "❌ 點擊胰液無效！剩餘的脂質尚未經過膽汁乳化！請先點擊【肝臟】與【膽囊】！";
                 } else {
-                    document.getElementById('game4-status-msg').innerText = "💛 所有養分皆已分解完成！";
+                    if (msg) msg.innerText = "💛 所有養分皆已分解完成！";
                 }
                 return;
             }
 
             const target = candidates[Math.floor(Math.random() * candidates.length)];
-            if (target.type === 'starch') {
-                target.state = 2;
-                target.text = "✨ 葡萄糖";
-                document.getElementById('game4-status-msg').innerText = "💛 胰液注入！隨機分解了 1 個大澱粉為葡萄糖！";
-            } else if (target.type === 'protein') {
-                target.state = 2;
-                target.text = "🟢 胺基酸";
-                document.getElementById('game4-status-msg').innerText = "💛 胰液注入！隨機分解了 1 個大蛋白質為胺基酸！";
-            } else if (target.type === 'lipid' && target.state === 1) {
-                target.state = 2;
-                target.text = "💧 脂肪酸甘油";
-                document.getElementById('game4-status-msg').innerText = "💛 胰液注入！隨機將 1 個已乳化的小油滴分解為脂肪酸與甘油！";
+            target.state = 2;
+            if (msg) {
+                if (target.type === 'starch') msg.innerText = "💛 胰液注入！隨機分解了 1 個大澱粉為葡萄糖！";
+                else if (target.type === 'protein') msg.innerText = "💛 胰液注入！隨機分解了 1 個大蛋白質為胺基酸！";
+                else if (target.type === 'lipid') msg.innerText = "💛 胰液注入！隨機將 1 個已乳化的小油滴分解為脂肪酸與甘油！";
             }
-
             renderStage4Nutrients();
         };
 
@@ -2065,31 +1864,312 @@
                 (item.type === 'protein' && item.state === 0)
             );
 
+            const msg = document.getElementById('game4-status-msg');
             if (candidates.length === 0) {
                 const hasRemainingLipids = nutrientsData.some(item => item.type === 'lipid' && item.state < 2);
                 if (hasRemainingLipids) {
-                    document.getElementById('game4-status-msg').innerText = "🚫 腸液無法消化任何脂質（包含乳化小油滴）！請點擊【胰臟】注入胰液來消化脂質！";
+                    if (msg) msg.innerText = "🚫 腸液無法消化任何脂質（包含乳化小油滴）！請點擊【胰臟】注入胰液來消化脂質！";
                 } else {
-                    document.getElementById('game4-status-msg').innerText = "🌀 所有可由腸液消化的養分皆已分解完畢！";
+                    if (msg) msg.innerText = "🌀 所有可由腸液消化的養分皆已分解完畢！";
                 }
                 return;
             }
 
             const target = candidates[Math.floor(Math.random() * candidates.length)];
-            if (target.type === 'starch') {
-                target.state = 2;
-                target.text = "✨ 葡萄糖";
-                document.getElementById('game4-status-msg').innerText = "🌀 腸液分泌！隨機分解了 1 個大澱粉為葡萄糖！";
-            } else if (target.type === 'protein') {
-                target.state = 2;
-                target.text = "🟢 胺基酸";
-                document.getElementById('game4-status-msg').innerText = "🌀 腸液分泌！隨機分解了 1 個大蛋白質為胺基酸！";
+            target.state = 2;
+            if (msg) {
+                if (target.type === 'starch') msg.innerText = "🌀 腸液分泌！隨機分解了 1 個大澱粉為葡萄糖！";
+                else if (target.type === 'protein') msg.innerText = "🌀 腸液分泌！隨機分解了 1 個大蛋白質為胺基酸！";
             }
-
             renderStage4Nutrients();
         };
 
-        // Stage 6 Poop Game
+        function updateStudentRaceRecord(dist) {
+            if (!window.currentStudent.key || !studentProgressDB[window.currentStudent.key]) return;
+            const currentBest = studentProgressDB[window.currentStudent.key].raceBest || 0;
+            if (dist > currentBest) {
+                studentProgressDB[window.currentStudent.key].raceBest = dist;
+                studentProgressDB[window.currentStudent.key].updatedAt = new Date().toLocaleString();
+                localStorage.setItem('student_digest_progress_db', JSON.stringify(studentProgressDB));
+                if (window.saveStudentProgressToCloud) {
+                    window.saveStudentProgressToCloud(studentProgressDB[window.currentStudent.key]);
+                }
+            }
+        }
+
+        function initNutrientAdventureGame() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const startOverlay = document.getElementById('startOverlay');
+            const gameOverOverlay = document.getElementById('gameOverOverlay');
+            const hud = document.getElementById('hud');
+            const scoreText = document.getElementById('scoreText');
+            const speedText = document.getElementById('speedText');
+            const progressBar = document.getElementById('progressBar');
+            const gameOverTitle = document.getElementById('gameOverTitle');
+            const gameOverSub = document.getElementById('gameOverSub');
+            const finalScore = document.getElementById('finalScore');
+            const highScore = document.getElementById('highScore');
+            const startBtn = document.getElementById('startBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+
+            let width = 340, height = 480;
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width || 340;
+                canvas.height = rect.height || 480;
+                width = canvas.width;
+                height = canvas.height;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            setTimeout(resizeCanvas, 100);
+            resizeCanvas();
+
+            let gameState = 'START';
+            let scrollSpeed = 0.9, initialSpeed = 0.9, distance = 0;
+            const TOTAL_INTESTINE_LENGTH = 600;
+            let frameCount = 0;
+
+            const player = { x: width / 2, y: height - 80, radius: 8, speed: 5.5, glow: 12, trail: [], scale: 1.0 };
+            let wallSegments = [];
+            const segmentHeight = 6;
+            let foldPhase = 0;
+            const keys = { left: false, right: false };
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            });
+            window.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+            });
+
+            const setupTouchBtn = (btn, keyProp) => {
+                if (!btn) return;
+                const startEvent = (e) => { e.preventDefault(); keys[keyProp] = true; };
+                const endEvent = (e) => { e.preventDefault(); keys[keyProp] = false; };
+                btn.addEventListener('touchstart', startEvent, { passive: false });
+                btn.addEventListener('touchend', endEvent, { passive: false });
+                btn.addEventListener('mousedown', startEvent);
+                btn.addEventListener('mouseup', endEvent);
+                btn.addEventListener('mouseleave', endEvent);
+            };
+
+            setupTouchBtn(leftBtn, 'left');
+            setupTouchBtn(rightBtn, 'right');
+
+            function triggerGameOver(isWin = false) {
+                if (gameState !== 'PLAYING') return;
+                gameState = 'ABSORBING';
+
+                let shrinkInterval = setInterval(() => {
+                    player.scale -= 0.08;
+                    if (player.scale <= 0) {
+                        player.scale = 0;
+                        clearInterval(shrinkInterval);
+                        gameState = 'GAMEOVER';
+
+                        let finalDist = Math.min(TOTAL_INTESTINE_LENGTH, Math.floor(distance));
+                        updateStudentRaceRecord(finalDist);
+
+                        if (isWin) {
+                            if (gameOverTitle) gameOverTitle.innerText = "抵達大腸！";
+                            if (gameOverSub) gameOverSub.innerText = "太棒了！養分完美穿過 600 公分的小腸成功到達大腸！";
+                        } else {
+                            if (gameOverTitle) gameOverTitle.innerText = "養分被小腸吸收！";
+                            if (gameOverSub) gameOverSub.innerText = "任務結束！你已成功的為身體提供能量";
+                        }
+
+                        if (finalScore) finalScore.innerText = `${finalDist} cm`;
+                        if (highScore) highScore.innerText = `${window.currentStudent.key && studentProgressDB[window.currentStudent.key] ? (studentProgressDB[window.currentStudent.key].raceBest || 0) : finalDist} cm`;
+
+                        if (hud) hud.classList.add('hidden');
+                        if (gameOverOverlay) gameOverOverlay.classList.remove('hidden');
+                    }
+                }, 30);
+            }
+
+            function generateWallSegment(yPos, isInit = false) {
+                frameCount++;
+                foldPhase += 0.045;
+
+                let baseSin = Math.sin(foldPhase);
+                let detailSin = Math.sin(foldPhase * 2.5) * 0.3;
+                let combinedCurve = baseSin + detailSin;
+
+                let safetyFactor = isInit ? 0.15 : Math.min(1.0, distance / 80);
+                let maxSwing = width * 0.35 * safetyFactor;
+                let pathCenter = (width / 2) + combinedCurve * maxSwing;
+
+                let minWidth = 70, startWidth = 120;
+                let currentPathWidth = Math.max(minWidth, startWidth - Math.floor(distance / 12));
+
+                let leftEdge = pathCenter - (currentPathWidth / 2);
+                let rightEdge = pathCenter + (currentPathWidth / 2);
+
+                const margin = 20;
+                if (leftEdge < margin) { leftEdge = margin; rightEdge = leftEdge + currentPathWidth; }
+                if (rightEdge > width - margin) { rightEdge = width - margin; leftEdge = rightEdge - currentPathWidth; }
+
+                return { y: yPos, left: leftEdge, right: width - rightEdge, isFoldPeak: Math.abs(Math.cos(foldPhase)) > 0.85 };
+            }
+
+            function update() {
+                if (gameState !== 'PLAYING') return;
+
+                distance += scrollSpeed * 0.08;
+                scrollSpeed = initialSpeed + (distance / 350);
+
+                let curCm = Math.min(TOTAL_INTESTINE_LENGTH, Math.floor(distance));
+                if (scoreText) scoreText.innerText = `${curCm}`;
+                if (speedText) speedText.innerText = `${(scrollSpeed / initialSpeed).toFixed(1)}`;
+                if (progressBar) progressBar.style.width = `${(curCm / TOTAL_INTESTINE_LENGTH) * 100}%`;
+
+                if (distance >= TOTAL_INTESTINE_LENGTH) {
+                    triggerGameOver(true);
+                    return;
+                }
+
+                if (keys.left) player.x -= player.speed;
+                if (keys.right) player.x += player.speed;
+
+                for (let seg of wallSegments) seg.y += scrollSpeed;
+
+                while (wallSegments.length > 0 && wallSegments[0].y > height + segmentHeight) wallSegments.shift();
+                let topY = wallSegments.length > 0 ? wallSegments[wallSegments.length - 1].y : height;
+                while (topY > -segmentHeight * 2) {
+                    topY -= segmentHeight;
+                    wallSegments.push(generateWallSegment(topY));
+                }
+
+                for (let seg of wallSegments) {
+                    if (Math.abs(seg.y - player.y) < segmentHeight * 1.2) {
+                        if (player.x - player.radius + 1 < seg.left || player.x + player.radius - 1 > width - seg.right) {
+                            triggerGameOver(false);
+                            break;
+                        }
+                    }
+                }
+
+                if (player.x - player.radius < 0) player.x = player.radius;
+                if (player.x + player.radius > width) player.x = width - player.radius;
+            }
+
+            function draw() {
+                ctx.fillStyle = '#2c0b12';
+                ctx.fillRect(0, 0, width, height);
+
+                if (wallSegments.length > 0) {
+                    ctx.fillStyle = '#881337';
+                    ctx.fillRect(0, 0, 12, height);
+                    ctx.fillRect(width - 12, 0, 12, height);
+
+                    ctx.fillStyle = '#fef3c7';
+                    ctx.fillRect(10, 0, 8, height);
+                    ctx.fillRect(width - 18, 0, 8, height);
+
+                    ctx.fillStyle = '#e11d48';
+                    ctx.strokeStyle = '#9f1239';
+                    ctx.lineWidth = 2;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, wallSegments[0].y);
+                    for (let seg of wallSegments) ctx.lineTo(seg.left, seg.y);
+                    ctx.lineTo(0, wallSegments[wallSegments.length - 1].y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(width, wallSegments[0].y);
+                    for (let seg of wallSegments) ctx.lineTo(width - seg.right, seg.y);
+                    ctx.lineTo(width, wallSegments[wallSegments.length - 1].y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#f43f5e';
+                    for (let seg of wallSegments) {
+                        ctx.beginPath();
+                        ctx.arc(seg.left, seg.y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(width - seg.right, seg.y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                if (player.scale > 0 && (gameState === 'PLAYING' || gameState === 'START' || gameState === 'ABSORBING')) {
+                    ctx.save();
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = player.glow * player.scale;
+
+                    let r = player.radius * player.scale;
+                    ctx.fillStyle = '#fde047';
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, Math.max(0.1, r), 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (gameState === 'PLAYING') {
+                        ctx.strokeStyle = 'rgba(251, 191, 36, 0.8)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(player.x, player.y, r + 3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            function loop() {
+                update();
+                draw();
+                requestAnimationFrame(loop);
+            }
+
+            function resetGame() {
+                resizeCanvas();
+                distance = 0;
+                scrollSpeed = initialSpeed;
+                player.x = width / 2;
+                player.y = height - 80;
+                player.scale = 1.0;
+                wallSegments = [];
+                foldPhase = 0;
+                frameCount = 0;
+                for (let y = height; y > -segmentHeight * 20; y -= segmentHeight) {
+                    wallSegments.push(generateWallSegment(y, true));
+                }
+            }
+
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    resetGame();
+                    if (startOverlay) startOverlay.classList.add('hidden');
+                    if (hud) hud.classList.remove('hidden');
+                    gameState = 'PLAYING';
+                });
+            }
+
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    resetGame();
+                    if (gameOverOverlay) gameOverOverlay.classList.add('hidden');
+                    if (hud) hud.classList.remove('hidden');
+                    gameState = 'PLAYING';
+                });
+            }
+
+            resetGame();
+            loop();
+        }
+
         window.resetPoopGame = function() {
             const slider = document.getElementById('poop-slider');
             if (slider) {
@@ -2099,31 +2179,65 @@
         };
 
         window.updatePoopSlider = function(val) {
-            const valNum = Number(val);
-            document.getElementById('poop-time-val').innerText = `${valNum} 小時 (${(valNum / 24).toFixed(1)} 天)`;
+            const valEl = document.getElementById('poop-time-val');
             const icon = document.getElementById('poop-icon');
             const title = document.getElementById('poop-status-title');
             const desc = document.getElementById('poop-status-desc');
 
-            if (valNum <= 12) {
-                icon.innerText = "💩💧";
-                title.innerText = "水狀稀便 (腹瀉 / 拉肚子！)";
-                desc.innerText = "大腸蠕動過快（僅停留 " + valNum + " 小時），殘渣停留時間太短，水分來不及吸收就被排出了！";
-                title.className = "text-lg font-black text-blue-600";
-            } else if (valNum <= 36) {
-                icon.innerText = "🍌✨";
-                title.innerText = "黃金香蕉狀糞便 (健康正常！)";
-                desc.innerText = "殘渣停留約 " + valNum + " 小時（約 1 天），水分吸收剛好適中！經肛門順利排出，身體健康！";
-                title.className = "text-lg font-black text-emerald-600";
+            let stateText = '';
+            if (val <= 12) {
+                stateText = `${val}小時 (腹瀉)`;
+                if (valEl) valEl.innerText = `${val} 小時 (過快)`;
+                if (icon) icon.innerText = "💩💧";
+                if (title) { title.innerText = "水狀稀便 (腹瀉 / 拉肚子！)"; title.className = "text-lg font-black text-blue-600"; }
+                if (desc) desc.innerText = "大腸蠕動過快，殘渣停留時間太短，水分來不及吸收就被排出了！";
+            } else if (val <= 36) {
+                stateText = `${val}小時 (健康)`;
+                if (valEl) valEl.innerText = `${val} 小時 (適中)`;
+                if (icon) icon.innerText = "🍌✨";
+                if (title) { title.innerText = "黃金香蕉狀糞便 (健康正常！)"; title.className = "text-lg font-black text-emerald-600"; }
+                if (desc) desc.innerText = "水分吸收時間剛剛好！經肛門順利排出，身體健康舒適！";
             } else {
-                icon.innerText = "💩🌵";
-                title.innerText = "硬邦邦乾裂便便 (便秘！)";
-                desc.innerText = "大腸蠕動過慢（停留長達 " + valNum + " 小時/約 " + (valNum/24).toFixed(1) + " 天），水分被過度吸收乾涸了！";
-                title.className = "text-lg font-black text-amber-800";
+                stateText = `${val}小時 (便秘)`;
+                if (valEl) valEl.innerText = `${val} 小時 (過久)`;
+                if (icon) icon.innerText = "💩🌵";
+                if (title) { title.innerText = "硬邦邦乾裂便便 (便秘！)"; title.className = "text-lg font-black text-amber-800"; }
+                if (desc) desc.innerText = "大腸蠕動太慢，殘渣停留時間太長，水分被過度吸收乾涸了！";
+            }
+
+            if (window.currentStudent.key && studentProgressDB[window.currentStudent.key]) {
+                studentProgressDB[window.currentStudent.key].poopState = stateText;
+                studentProgressDB[window.currentStudent.key].updatedAt = new Date().toLocaleString();
+                localStorage.setItem('student_digest_progress_db', JSON.stringify(studentProgressDB));
+                if (window.saveStudentProgressToCloud) {
+                    window.saveStudentProgressToCloud(studentProgressDB[window.currentStudent.key]);
+                }
             }
         };
 
-        // Stage 7 Quiz
+        const QUESTION_BANK_20 = [
+            { q: "1. 下列哪一個消化器官『不含有』任何消化酵素，但能將脂質乳化？", options: ["A. 胃液", "B. 膽汁", "C. 胰液", "D. 唾液"], answer: 1, explain: "膽汁由肝臟製造、膽囊儲存，不含酵素，專門乳化脂質！" },
+            { q: "2. 食物主要在哪一個器官進行『大部分養分與水分的吸收』？", options: ["A. 胃", "B. 大腸", "C. 小腸", "D. 口腔"], answer: 2, explain: "小腸有絨毛增加表面積，是消化與吸收最主要的器官！" },
+            { q: "3. 關於『排遺』與『排泄』的敘述，下列何者正確？", options: ["A. 肛門排出糞便屬於排泄", "B. 排遺是指排出細胞代謝後的廢物", "C. 糞便是未經細胞利用的殘渣，故排出糞便稱為排遺", "D. 腎臟形成尿液屬於排遺"], answer: 2, explain: "糞便為未吸收殘渣，經肛門排出稱為排遺！" },
+            { q: "4. 馬歇爾醫師喝下幽門螺旋桿菌培養液，證明了何種疾病的成因？", options: ["A. 闌尾炎", "B. 胃潰瘍與胃炎", "C. 口腔潰瘍", "D. 脂肪肝"], answer: 1, explain: "馬歇爾醫師證明幽門螺旋桿菌是胃炎與胃潰瘍的主因，榮獲諾貝爾獎！" },
+            { q: "5. 唾液中含有唾液澱粉酶，主要能將大分子的澱粉分解為什麼？", options: ["A. 胺基酸", "B. 脂肪酸", "C. 麥芽糖", "D. 蛋白質"], answer: 2, explain: "唾液澱粉酶能將澱粉初步分解為麥芽糖/糖類！" },
+            { q: "6. 吞嚥時，哪一個結構會自動向下蓋住氣管開口以防嗆到？", options: ["A. 聲帶", "B. 會厭軟骨", "C. 甲狀腺", "D. 懸壅垂"], answer: 1, explain: "會厭軟骨在吞嚥時蓋住氣管，防止食物掉入！" },
+            { q: "7. 澱粉試劑（碘液）遇到澱粉時會呈現什麼顏色？", options: ["A. 淺藍色", "B. 藍黑色", "C. 鮮紅色", "D. 綠色"], answer: 1, explain: "碘液檢驗澱粉呈現藍黑色！" },
+            { q: "8. 本氏液檢驗糖類，隔水加熱後若含有糖分會出現什麼顏色變化？", options: ["A. 淺藍色轉藍黑色", "B. 綠色、黃色到橙紅色", "C. 黃褐色轉無色", "D. 紫色轉粉紅色"], answer: 1, explain: "本氏液檢驗糖類呈現綠➔黃➔橙➔紅的變化！" },
+            { q: "9. 胃液中含有何種成分，能提供強酸環境活化胃蛋白酶並殺菌？", options: ["A. 膽汁酸", "B. 醋酸", "C. 鹽酸 (胃酸)", "D. 碳酸水"], answer: 2, explain: "胃腺分泌鹽酸（胃酸）提供強酸環境！" },
+            { q: "10. 小腸內壁具備何種結構，能大幅增加吸收養分的表面積？", options: ["A. 環狀皺褶與絨毛", "B. 纖毛與鞭毛", "C. 樹突與軸突", "D. 氣孔"], answer: 0, explain: "環狀皺褶與絨毛使小腸吸收面積擴大數百倍！" },
+            { q: "11. 胰臟分泌的胰液會注入哪一個消化器官？", options: ["A. 胃", "B. 口腔", "C. 小腸", "D. 大腸"], answer: 2, explain: "胰液經管道注入小腸前段！" },
+            { q: "12. 蛋白質在人體消化道中，最早在哪一個器官開始進行化學分解？", options: ["A. 口腔", "B. 食道", "C. 胃", "D. 小腸"], answer: 2, explain: "蛋白質最早在胃中由胃蛋白酶初步分解！" },
+            { q: "13. 膽汁由哪一個器官『製造』？", options: ["A. 膽囊", "B. 肝臟", "C. 胰臟", "D. 脾臟"], answer: 1, explain: "膽汁由肝臟製造，儲存於膽囊！" },
+            { q: "14. 水溶性養分（如葡萄糖、胺基酸）主要由絨毛內的什麼結構吸收？", options: ["A. 微血管", "B. 乳糜管 (淋巴管)", "C. 神經纖維", "D. 動脈"], answer: 0, explain: "水溶性養分由絨毛內的微血管吸收！" },
+            { q: "15. 大腸的主要功能是什麼？", options: ["A. 化學分解蛋白質", "B. 分泌膽汁", "C. 吸收殘渣中剩餘的水分與礦物質", "D. 切碎食物"], answer: 2, explain: "大腸不含消化酶，主要吸收水分與礦物質形成糞便！" },
+            { q: "16. 為什麼吃飯時不宜邊大笑邊說話？", options: ["A. 容易胃酸逆流", "B. 會厭軟骨打開，食物易誤入氣管嗆到", "C. 牙齒會咬到舌頭", "D. 唾液會停止分泌"], answer: 1, explain: "說話時氣管開啟，會厭軟骨未蓋住容易嗆到！" },
+            { q: "17. 食物在食道中主要依靠什麼力量向胃推進？", options: ["A. 重力自由落體", "B. 地心引力與水流", "C. 食道管壁肌肉收縮蠕動", "D. 氣壓推進"], answer: 2, explain: "食道靠肌肉收縮蠕動推進食物！" },
+            { q: "18. 膳食纖維雖然無法被身體消化吸收，但對人體有何好處？", options: ["A. 提供大量熱量", "B. 增加糞便體積並促進腸道蠕動", "C. 轉化成蛋白質", "D. 殺死胃部細菌"], answer: 1, explain: "膳食纖維能促進腸道蠕動預防便秘！" },
+            { q: "19. 若大腸蠕動過快、吸收水分時間不足，會引發什麼現象？", options: ["A. 便秘", "B. 腹瀉 (拉肚子)", "C. 胃潰瘍", "D. 闌尾炎"], answer: 1, explain: "大腸來不及吸收水分會導致腹瀉！" },
+            { q: "20. 脂溶性養分（如脂肪酸、維生素A）主要由絨毛內的何種結構吸收？", options: ["A. 微血管", "B. 乳糜管 (淋巴管)", "C. 紅血球", "D. 汗腺"], answer: 1, explain: "脂溶性養分由絨毛中的乳糜管（淋巴管）吸收！" }
+        ];
+
         let selectedQuizSet = [];
         let quizIndex = 0;
         let quizScore = 0;
@@ -2133,8 +2247,10 @@
             quizIndex = 0;
             quizScore = 0;
 
-            document.getElementById('final-quiz-card').classList.remove('hidden');
-            document.getElementById('final-certificate').classList.add('hidden');
+            const card = document.getElementById('final-quiz-card');
+            const cert = document.getElementById('final-certificate');
+            if (card) card.classList.remove('hidden');
+            if (cert) cert.classList.add('hidden');
 
             renderQuizQuestion();
         }
@@ -2146,18 +2262,24 @@
             }
 
             const currentQ = selectedQuizSet[quizIndex];
+            const numEl = document.getElementById('final-q-num');
+            const scoreEl = document.getElementById('final-score-text');
+            const titleEl = document.getElementById('final-q-title');
+            const msgEl = document.getElementById('final-msg');
 
-            document.getElementById('final-q-num').innerText = `第 ${quizIndex + 1} / 10 題`;
-            document.getElementById('final-score-text').innerText = `當前得分：${quizScore} 分`;
-            document.getElementById('final-q-title').innerText = currentQ.q;
-            document.getElementById('final-msg').innerText = "";
+            if (numEl) numEl.innerText = `第 ${quizIndex + 1} / 10 題`;
+            if (scoreEl) scoreEl.innerText = `當前得分：${quizScore} 分`;
+            if (titleEl) titleEl.innerText = currentQ.q;
+            if (msgEl) msgEl.innerText = "";
 
             const optBox = document.getElementById('final-options');
-            optBox.innerHTML = currentQ.options.map((opt, idx) => `
-                <button onclick="handleQuizAnswer(${idx})" class="w-full text-left bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 p-4 rounded-xl font-bold text-base text-slate-800 transition shadow-xs">
-                    ${opt}
-                </button>
-            `).join('');
+            if (optBox) {
+                optBox.innerHTML = currentQ.options.map((opt, idx) => `
+                    <button onclick="handleQuizAnswer(${idx})" class="w-full text-left bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 p-3.5 rounded-xl font-bold text-sm text-slate-800 transition shadow-xs">
+                        ${opt}
+                    </button>
+                `).join('');
+            }
         }
 
         window.handleQuizAnswer = function(chosenIdx) {
@@ -2166,12 +2288,10 @@
 
             if (chosenIdx === currentQ.answer) {
                 quizScore += 10;
-                msg.innerText = `✅ 答對了！ ${currentQ.explain}`;
-                msg.className = "text-base font-bold text-emerald-600 text-center";
+                if (msg) { msg.innerText = `✅ 答對了！ ${currentQ.explain}`; msg.className = "text-sm font-bold text-emerald-600 text-center"; }
                 confetti({ particleCount: 30 });
             } else {
-                msg.innerText = `❌ 答錯囉！ ${currentQ.explain}`;
-                msg.className = "text-base font-bold text-rose-600 text-center";
+                if (msg) { msg.innerText = `❌ 答錯囉！ ${currentQ.explain}`; msg.className = "text-sm font-bold text-rose-600 text-center"; }
             }
 
             setTimeout(() => {
@@ -2181,11 +2301,24 @@
         };
 
         function showQuizResults() {
-            document.getElementById('final-quiz-card').classList.add('hidden');
-            document.getElementById('final-certificate').classList.remove('hidden');
+            const quizCard = document.getElementById('final-quiz-card');
+            const certificate = document.getElementById('final-certificate');
+            const certScore = document.getElementById('cert-score');
+            const certAttempts = document.getElementById('cert-attempts');
 
-            document.getElementById('cert-score').innerText = quizScore;
-            document.getElementById('cert-attempts').innerText = attempts;
+            if (quizCard) quizCard.classList.add('hidden');
+            if (certificate) certificate.classList.remove('hidden');
+            if (certScore) certScore.innerText = quizScore;
+            if (certAttempts) certAttempts.innerText = attempts;
+
+            if (window.currentStudent.key && studentProgressDB[window.currentStudent.key]) {
+                studentProgressDB[window.currentStudent.key].quizScore = quizScore;
+                studentProgressDB[window.currentStudent.key].updatedAt = new Date().toLocaleString();
+                localStorage.setItem('student_digest_progress_db', JSON.stringify(studentProgressDB));
+                if (window.saveStudentProgressToCloud) {
+                    window.saveStudentProgressToCloud(studentProgressDB[window.currentStudent.key]);
+                }
+            }
 
             confetti({ particleCount: 120, spread: 80 });
         }
